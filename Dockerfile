@@ -6,9 +6,9 @@
 #
 FROM alpine:latest
 
-RUN apk update \ 
+RUN apk update \
     && apk add gcc tar libtool zlib jemalloc jemalloc-dev perl \ 
-    make musl-dev openssl-dev pcre-dev g++ zlib-dev
+    make musl-dev openssl-dev pcre-dev g++ zlib-dev curl
 
 ENV OPENRESTY_VERSION 1.9.3.1
 ENV NAXSI_VERSION 0.53-2
@@ -66,9 +66,9 @@ RUN  cd /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION} \
     && make install \
          LUA_LIB_DIR=${_exec_prefix}/api-gateway/lualib \
-         INSTALL=/tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION}/build/install
-#    && rm -rf /var/cache/apk/* \
-#    && rm -rf /tmp/api-gateway
+         INSTALL=/tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION}/build/install \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/api-gateway
 
 
 COPY init.sh /etc/init-container.sh

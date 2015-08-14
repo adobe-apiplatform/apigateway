@@ -21,14 +21,23 @@ A performant API Gateway based on Openresty and Nginx.
  ```
  The main API Gateway process is exposed to port 8080. To test that the Gateway works see its `health-check`:
  ```
-  $ curl http://192.168.59.103:8080/health-check
+  $ curl http://<docker_host_ip>:8080/health-check
     API-Platform is running!
  ```
  If you're up for a quick performance test, you can play with Apache Benchmark via Docker:
 
  ```
-  docker run jordi/ab ab -k -n 200000 -c 500 http://192.168.59.103:8080/health-check
+  docker run jordi/ab ab -k -n 200000 -c 500 http://<docker_host_ip>:8080/health-check
  ```
+
+ To run docker mounting the local `api-gateway-config` directory into `/etc/api-gateway/` issue:
+
+ ```bash
+ $ make docker-debug
+ ```
+ In debug mode docker container starts with `-e "LOG_LEVEL=debug"` which will give you a little more debugging information.
+
+ To enable the full debug logging in nginx ( using a build configured `--with-debug` ) there will be a separate container.
 
  When done stop the image:
  ```
@@ -96,8 +105,10 @@ MARATHON_TASKS=ws-.* ( NOT USED NOW. TBD IF THERE'S A NEED TO FILTER OUT SOME TA
 
 So the Docker command is now :
 ```
-docker run  -p 8080:80 \
-            -e "MARATHON_HOST=http://<marathon_host>:<marathon_port>" \
-            -v `pwd`/api-gateway-config:/etc/api-gateway apiplatform/api-platform-box:latest
+docker run --name="apigateway" \
+            -p 8080:80 \
+            -e "MARATHON_HOST=http://<marathon_host>:<port>/" \
+            -e "LOG_LEVEL=info" \
+            apiplatform/apigateway:latest
 ```
 
