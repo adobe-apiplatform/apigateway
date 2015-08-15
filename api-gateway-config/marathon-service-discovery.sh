@@ -52,17 +52,19 @@ info_log() {
 
 # 1. create the new upstream config
 # NOTE: for the moment when tasks expose multiple ports, only the first one is exposed through nginx
-curl -s ${marathon_host}/v2/tasks -H "Accept:text/plain" | awk 'NF>2' | grep -v :0 | awk '!seen[$1]++' | awk ' {s=""; for (f=3; f<=NF; f++) s = s  "\n server " $f " fail_timeout=10s;" ; print "upstream " $1 " {"  s  "\n keepalive 16;\n}" }'  > $UPSTREAM_FILE
+curl -s ${marathon_host}/v2/tasks -H "Accept:text/plain" | awk 'NF>2' | grep -v :0 | awk '!seen[$1]++' | awk ' {s=""; for (f=3; f<=NF; f++) s = s  "\n server " $f " fail_timeout=10s;" ; print "upstream " $1 " {"  s  "\n keepalive 16;\n}" }'  > ${TMP_FILE}
 # 2 check for changes
-# TODO: WIP first make sure that the upstream file DID really change, OR if there are other changes pushed to /etc/api-gateway since last run
 changed_files=$(find /etc/api-gateway -type f -newer /var/run/apigateway-config-watcher.lastrun -print)
-if [[ -n "${changed_files}" ]]; then
+changed_upstreams=$(cmp -l ${TMP_FILE} ${UPSTREAM_FILE})
+if [[ \( -n "${changed_files}" \) -o \( -n "${changed_upstreams}" \) ]]; then
     info_log "discovered changed files ..."
     info_log ${changed_files}
+    cp ${TMP_FILE} ${UPSTREAM_FILE}
     echo `date` > /var/run/apigateway-config-watcher.lastrun
     info_log "reloading gateway ..."
     api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf && api-gateway -s reload
 fi
+echo `date` > /var/run/apigateway-config-watcher.lastrun
 
 # 2. diff with an existing one
 # cmp -b $TMP_FILE $UPSTREAM_FILE || (info_log "discovered a change..." && cp $TMP_FILE $UPSTREAM_FILE && info_log "reloading gateway ..." && api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf && api-gateway -s reload)
