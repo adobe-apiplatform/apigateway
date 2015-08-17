@@ -39,3 +39,8 @@ docker-stop:
 	docker stop apigateway
 	docker rm apigateway
 
+.PHONY: docker-push
+docker-push:
+	docker tag -f apiplatform/apigateway $(DOCKER_REGISTRY)/apiplatform/apigateway:$(DOCKER_TAG)
+	docker push $(DOCKER_REGISTRY)/apiplatform/apigateway:$(DOCKER_TAG)
+

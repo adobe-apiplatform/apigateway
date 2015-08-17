@@ -14,7 +14,7 @@ ENV OPENRESTY_VERSION 1.9.3.1
 ENV NAXSI_VERSION 0.53-2
 ENV PCRE_VERSION 8.37
 ENV HMAC_LUA_VERSION 1.0.0
-ENV REQUEST_VALIDATION_VERSION 1.0.0
+ENV REQUEST_VALIDATION_VERSION 1.0.1
 
 RUN mkdir -p /tmp/api-gateway/
 ADD https://github.com/nbs-system/naxsi/archive/${NAXSI_VERSION}.tar.gz /tmp/api-gateway/naxsi-${NAXSI_VERSION}.tar.gz
@@ -57,7 +57,7 @@ RUN  cd /tmp/api-gateway/ \
     && make install \
     && echo " ... installing api-gateway-hmac ..." \
     && tar -xf /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz -C /tmp/api-gateway/ \
-    && cd /tmp/api-gateway/api-gateway-hmac-${REQUEST_VALIDATION_VERSION} \
+    && cd /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION} \
     && make install \
          LUA_LIB_DIR=${_exec_prefix}/api-gateway/lualib \
          INSTALL=/tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION}/build/install \
