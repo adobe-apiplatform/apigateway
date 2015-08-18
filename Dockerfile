@@ -1,4 +1,4 @@
-# api-platform-box
+# apigateway
 #
 # VERSION               1.9.3.1
 #
@@ -20,8 +20,8 @@ RUN mkdir -p /tmp/api-gateway/
 ADD https://github.com/nbs-system/naxsi/archive/${NAXSI_VERSION}.tar.gz /tmp/api-gateway/naxsi-${NAXSI_VERSION}.tar.gz
 ADD http://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz /tmp/api-gateway/prce-${PCRE_VERSION}.tar.gz
 ADD http://openresty.org/download/ngx_openresty-${OPENRESTY_VERSION}.tar.gz /tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION}.tar.gz
-ADD https://github.com/apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz
-ADD https://github.com/apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz
+ADD https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz
+ADD https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz
 
 RUN  cd /tmp/api-gateway/ \ 
      && tar -xf ./ngx_openresty-${OPENRESTY_VERSION}.tar.gz \
