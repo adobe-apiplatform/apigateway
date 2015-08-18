@@ -8,7 +8,7 @@ FROM alpine:latest
 
 RUN apk update \
     && apk add gcc tar libtool zlib jemalloc jemalloc-dev perl \ 
-    make musl-dev openssl-dev pcre-dev g++ zlib-dev curl
+    make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python
 
 ENV OPENRESTY_VERSION 1.9.3.1
 ENV NAXSI_VERSION 0.53-2

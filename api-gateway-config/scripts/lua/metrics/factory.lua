@@ -18,39 +18,20 @@
 --   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 --   DEALINGS IN THE SOFTWARE.
 
--- An initialization script on a per worker basis.
+--
+-- A factory to initialize the methods that can be used for capturing usage data
+-- This class is provided as an example
 -- User: ddascal
--- Date: 07/12/14
--- Time: 16:44
 --
 
-local _M = {}
+local MetricsCollector = require "metrics.MetricsCollector"
+local collector = MetricsCollector:new()
 
-
---- Loads a lua gracefully. If the module doesn't exist the exception is caught, logged and the execution continues
--- @param module path to the module to be loaded
---
-local function loadrequire(module)
-    ngx.log(ngx.DEBUG, "Loading module [" .. tostring(module) .. "]")
-    local function requiref(module)
-        require(module)
-    end
-
-    local res = pcall(requiref, module)
-    if not (res) then
-        ngx.log(ngx.WARN, "Could not load module [", module, "].")
-        return nil
-    end
-    return require(module)
+local function _captureUsageData()
+    return collector:logCurrentRequest()
 end
 
-local function initValidationFactory(parentObject)
-    parentObject.validation = require "api-gateway.validation.factory"
-end
-
-initValidationFactory(_M)
--- TODO: test health-check with the new version of Openresty
--- initRedisHealthCheck()
-
-ngx.apiGateway = _M
+return {
+    captureUsageData = _captureUsageData
+}
 

@@ -1,3 +1,4 @@
+#!/bin/sh
 #/*
 # * Copyright (c) 2012 Adobe Systems Incorporated. All rights reserved.
 # *
@@ -20,7 +21,6 @@
 # * DEALINGS IN THE SOFTWARE.
 # *
 # */
-#!/bin/sh
 
 #
 #  Overview:
@@ -54,6 +54,9 @@ info_log() {
 # NOTE: for the moment when tasks expose multiple ports, only the first one is exposed through nginx
 curl -s ${marathon_host}/v2/tasks -H "Accept:text/plain" | awk 'NF>2' | grep -v :0 | awk '!seen[$1]++' | awk ' {s=""; for (f=3; f<=NF; f++) s = s  "\n server " $f " fail_timeout=10s;" ; print "upstream " $1 " {"  s  "\n keepalive 16;\n}" }'  > ${TMP_FILE}
 # 1.1. check redis upstreams
+#
+# ASSUMPTION:  there is a redis app named "api-gateway-redis" deployed in marathon and optionally another app named "api-gateway-redis-replica"
+#
 redis_master=$(cat ${TMP_FILE} | grep api-gateway-redis | wc -l)
 redis_replica=$(cat ${TMP_FILE} | grep api-gateway-redis-replica | wc -l)
 #      if api-gateway-redis upstream exists but api-gateway-redis-replica does not, then create the replica
