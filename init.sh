@@ -21,11 +21,18 @@
 # * DEALINGS IN THE SOFTWARE.
 # *
 # */
-
+debug_mode=$(echo $DEBUG)
 log_level=${LOG_LEVEL:-warn}
 marathon_host=$(echo $MARATHON_HOST)
+sleep_duration=${MARATHON_POLL_INTERVAL:-5}
 
 echo "Starting api-gateway ..."
+if [ "${debug_mode}" == "true" ]; then
+    echo "   ...  in DEBUG mode "
+    mv /usr/local/sbin/api-gateway /usr/local/sbin/api-gateway-no-debug
+    ln -sf /usr/local/sbin/api-gateway-debug /usr/local/sbin/api-gateway
+fi
+
 /usr/local/sbin/api-gateway -V
 echo "------"
 
@@ -33,10 +40,10 @@ echo resolver $(awk 'BEGIN{ORS=" "} /nameserver/{print $2}' /etc/resolv.conf | s
 echo "   ...  with dns $(cat /etc/api-gateway/conf.d/includes/resolvers.conf)"
 
 if [[ -n "${marathon_host}" ]]; then
-    echo "  ... starting Marathon Service Discovery "
+    echo "  ... starting Marathon Service Discovery on ${marathon_host}"
     touch /var/run/apigateway-config-watcher.lastrun
     # start marathon's service discovery
-    while true; do /etc/api-gateway/marathon-service-discovery.sh > /dev/stderr; sleep 5; done &
+    while true; do /etc/api-gateway/marathon-service-discovery.sh > /dev/stderr; sleep ${sleep_duration}; done &
     # start simple statsd logger
     #
     # ASSUMPTION: there is a graphite app named "api-gateway-graphite" deployed in marathon
