@@ -18,8 +18,9 @@ The discovered services are exposed on individual VHosts as you can see in the [
 #### Accessing a Marathon app
 
 For example, if you have an application named `hello-world` you can access it on its VHost in 2 ways:
-1. Edit `/etc/hosts` and add `<docker_host_ip> hello-world.api.localhost` then browse to `http://hello-world.api.localhost`
-2. Sending the Host header in a curl command: `curl -H "Host:hello-world.api.localhost" http://<docker_host_ip>`
+
+ 1. Edit `/etc/hosts` and add `<docker_host_ip> hello-world.api.localhost` then browse to `http://hello-world.api.localhost`
+ 2. Sending the Host header in a curl command: `curl -H "Host:hello-world.api.localhost" http://<docker_host_ip>`
 
 The [discovery script](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/marathon-service-discovery.sh) is provided as an example for a quick-start and it can be replaced with your favourite discovery mechanism.
 The script updates a [configuration file](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/environment.conf.d/api-gateway-upstreams.http.conf) containing all the NGINX upstreams that are used in the [config file](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/conf.d/marathon_apis.conf#L36).
