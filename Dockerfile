@@ -127,7 +127,7 @@ RUN echo " ... installing api-gateway-zmq-adaptor" \
          && tar -xf /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
          && cd /tmp/api-gateway-zmq-adaptor-* \
          && make test \
-         && make install \
+         && PREFIX=/usr/local/sbin make install \
          && rm -rf /tmp/api-gateway-zmq-adaptor-* \
          && apk del check-dev \
          && rm -rf /var/cache/apk/*
