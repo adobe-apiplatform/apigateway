@@ -118,7 +118,7 @@ RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
     && rm -rf /tmp/api-gateway
 
 
-ENV ZMQ_ADAPTOR_VERSION v0.1.0
+ENV ZMQ_ADAPTOR_VERSION 0.1.1
 RUN echo " ... installing api-gateway-zmq-adaptor" \
          && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
          && apk update \
@@ -133,6 +133,19 @@ RUN echo " ... installing api-gateway-zmq-adaptor" \
          && rm -rf /var/cache/apk/*
 
 RUN cp -r /usr/local/test-nginx-0.24/inc/* /usr/local/share/perl5/site_perl/
+
+ENV ZMQ_LOGGER_VERSION master
+RUN echo " ... installing api-gateway-zmq-logger ..." \
+        && mkdir -p /tmp/api-gateway \
+        && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-logger/archive/master.tar.gz -o /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz \
+        && tar -xf /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
+        && cd /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION} \
+        && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
+        && make test \
+        && make install \
+             LUA_LIB_DIR=/usr/local/api-gateway/lualib \
+             INSTALL=/usr/local/api-gateway/bin/resty-install \
+        && rm -rf /tmp/api-gateway
 
 ENV HMAC_LUA_VERSION 1.0.0
 RUN echo " ... installing api-gateway-hmac ..." \

@@ -44,6 +44,23 @@ local function loadrequire(module)
     return require(module)
 end
 
+local function initZMQLogger(parentObject, propertyName)
+    ngx.log(ngx.DEBUG, "Initializing ZMQLogger on property [" .. tostring(propertyName) .. "]")
+    -- when the ZmqModule is not present the script does not break
+    local ZmqLogger = loadrequire("api-gateway.zmq.ZeroMQLogger")
+
+    if (ZmqLogger == nil) then
+        return
+    end
+
+    local zmq_publish_address = "ipc:///tmp/nginx_queue_listen"
+    ngx.log(ngx.INFO, "Starting new ZmqLogger on pid [", tostring(ngx.worker.pid()), "] on address [", zmq_publish_address, "]")
+    local zmqLogger = ZmqLogger:new()
+    zmqLogger:connect(ZmqLogger.SOCKET_TYPE.ZMQ_PUB, zmq_publish_address)
+
+    parentObject[propertyName] = zmqLogger
+end
+
 local function initValidationFactory(parentObject)
     parentObject.validation = require "api-gateway.validation.factory"
 end
@@ -54,8 +71,7 @@ end
 
 initValidationFactory(_M)
 initMetricsFactory(_M)
--- TODO: test health-check with the new version of Openresty
--- initRedisHealthCheck()
+initZMQLogger(_M, "zmqLogger")
 
 ngx.apiGateway = _M
 
