@@ -1,15 +1,11 @@
-# apigateway
-#
-# VERSION               1.9.3.1
-#
-# From https://hub.docker.com/_/alpine/
-#
-FROM alpine:latest
+# repository quay.io/concur_platform/apigateway
+# Docker version 1.6.0
 
-RUN apk update \
-    && apk add gcc tar libtool zlib jemalloc jemalloc-dev perl \ 
-    make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
-    perl-test-longstring perl-list-moreutils perl-http-message
+FROM quay.io/concur_platform/centos:latest
+MAINTAINER Concur DevX "devx@concur.com"
+
+# install needed packages
+RUN yum install -y tar
 
 ENV OPENRESTY_VERSION 1.9.3.1
 ENV NAXSI_VERSION 0.53-2
@@ -29,7 +25,7 @@ RUN  cd /tmp/api-gateway/ \
      && tar -xf ./ngx_openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -xf ./prce-${PCRE_VERSION}.tar.gz \
      && tar -xf ./naxsi-${NAXSI_VERSION}.tar.gz \
-     && cd /tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION} \ 
+     && cd /tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION} \
      && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
      && echo "using up to $NPROC threads" \
      && _prefix="/usr/local" \
