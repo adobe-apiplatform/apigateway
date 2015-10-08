@@ -1,22 +1,22 @@
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: myrc-${SERVICENAME}
+  name: myrc-apigateway-frontend
 spec:
   replicas: 2
   selector:
-    service: ${SERVICENAME}
-    build: build${CIRCLE_BUILD_NUM}
+    service: apigateway-frontend
+    build: build${{buildNum}}
   template:
     metadata:
-      name: mytemplate-${SERVICENAME}
+      name: mytemplate-apigateway-frontend
       labels:
-        service: ${SERVICENAME} #must match the selector of the rc, used for linking pods to services
-        build: build${CIRCLE_BUILD_NUM}
+        service: apigateway-frontend #must match the selector of the rc, used for linking pods to services
+        build: build${{buildNum}}
     spec:
       containers: #many containers can be specified here that will be scheduled together onto the same host
       - name: aboutme #first container
-        image: ${DOCKER_REGISTRY}/${CONTAINER1}:latest #container image location
+        image: quay.io/concur_platform/apigateway-frontend:${{buildNum}} #container image location
         ports:
         - containerPort: 3000 #port running inside and outside the container on the pod IP address
         #  hostPort: 3000 #not required but shown here, can be used to expose the container port directly on the kubernetes node
