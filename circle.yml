@@ -11,12 +11,12 @@ dependencies:
   post:
     - docker version
     - echo ${CIRCLE_BRANCH}
-    - if [ ${CIRCLE_BRANCH} != "master" ]; then docker build -t quay.io/concur_platform/apigateway:build${CIRCLE_BUILD_NUM} . ; fi
-    - if [ ${CIRCLE_BRANCH} != "master" ]; then docker tag quay.io/concur_platform/apigateway:build${CIRCLE_BUILD_NUM} quay.io/concur_platform/apigateway:v1 ; fi
-    - if [ ${CIRCLE_BRANCH} != "master" ]; then docker tag quay.io/concur_platform/apigateway:build${CIRCLE_BUILD_NUM} quay.io/concur_platform/apigateway:latest ; fi
+    - if [ ${CIRCLE_BRANCH} != "master" ]; then docker build -t quay.io/concur_platform/apigateway-frontend:build${CIRCLE_BUILD_NUM} . ; fi
+    - if [ ${CIRCLE_BRANCH} != "master" ]; then docker tag quay.io/concur_platform/apigateway-frontend:build${CIRCLE_BUILD_NUM} quay.io/concur_platform/apigateway-frontend:v1 ; fi
+    - if [ ${CIRCLE_BRANCH} != "master" ]; then docker tag quay.io/concur_platform/apigateway-frontend:build${CIRCLE_BUILD_NUM} quay.io/concur_platform/apigateway-frontend:latest ; fi
 
 deployment:
   preview:
     branch: dev
     commands:
-      - docker push quay.io/concur_platform/apigateway
+      - docker push quay.io/concur_platform/apigateway-frontend
