@@ -20,4 +20,3 @@ deployment:
     branch: circle-ci
     commands:
       - docker push quay.io/concur_platform/apigateway
-      - environment=PREVIEW deployment=build$CIRCLE_BUILD_NUM

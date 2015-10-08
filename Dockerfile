@@ -5,7 +5,7 @@ FROM quay.io/concur_platform/centos:latest
 MAINTAINER Concur DevX "devx@concur.com"
 
 # install needed packages
-RUN yum update \
+RUN yum update -y \
   && yum install -y gcc tar libtool zlib jemalloc jemalloc-dev perl \
   make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
   perl-test-longstring perl-list-moreutils perl-http-message
