@@ -17,6 +17,6 @@ dependencies:
 
 deployment:
   preview:
-    branch: circle-ci
+    branch: dev
     commands:
       - docker push quay.io/concur_platform/apigateway
