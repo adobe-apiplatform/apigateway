@@ -1,14 +1,15 @@
-# repository quay.io/concur_platform/apigateway
-# Docker version 1.6.0
+# apigateway
+#
+# VERSION               1.9.3.1
+#
+# From https://hub.docker.com/_/alpine/
+#
+FROM alpine:latest
 
-FROM quay.io/concur_platform/centos:latest
-MAINTAINER Concur DevX "devx@concur.com"
-
-# install needed packages
-RUN yum update -y \
-  && yum install -y gcc tar libtool zlib jemalloc jemalloc-dev perl \
-  make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
-  perl-test-longstring perl-list-moreutils perl-http-message
+RUN apk update \
+    && apk add gcc tar libtool zlib jemalloc jemalloc-dev perl \
+    make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
+    perl-test-longstring perl-list-moreutils perl-http-message
 
 ENV OPENRESTY_VERSION 1.9.3.1
 ENV NAXSI_VERSION 0.53-2
