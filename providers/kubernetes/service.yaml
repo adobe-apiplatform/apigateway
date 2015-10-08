@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${SERVICENAME}
+spec:
+  ports:
+    -
+      port: 80 # internal port for communication between internal pods and services using the service name
+      targetPort: 3000 # port on the POD
+      #you can specify a nodePort if you know one does not exist already
+      #nodePort: 31046 # port for ELB to load balance. since this gets created on each kubernetes minion node it must be unique cluster wide
+      #to obtain the nodePort on an existing service run "kubectl describe svc SERVICE --namespace=dev|qa|prod"
+  selector:
+    service: ${SERVICENAME}
+  type: ClusterIP
