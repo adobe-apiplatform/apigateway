@@ -1,6 +1,6 @@
 # repository quay.io/concur_platform/apigateway
 # Docker version 1.6.0
-
+#
 FROM quay.io/concur_platform/centos:latest
 MAINTAINER Concur DevX "devx@concur.com"
 
