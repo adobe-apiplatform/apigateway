@@ -1,11 +1,14 @@
 # repository quay.io/concur_platform/apigateway
 # Docker version 1.6.0
-#
+
 FROM quay.io/concur_platform/centos:latest
 MAINTAINER Concur DevX "devx@concur.com"
 
 # install needed packages
-RUN yum install -y tar
+RUN yum update \
+  && yum install -y gcc tar libtool zlib jemalloc jemalloc-dev perl \
+  make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
+  perl-test-longstring perl-list-moreutils perl-http-message
 
 ENV OPENRESTY_VERSION 1.9.3.1
 ENV NAXSI_VERSION 0.53-2
