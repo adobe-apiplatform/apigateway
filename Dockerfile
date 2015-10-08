@@ -3,7 +3,7 @@
 # VERSION               1.9.3.1
 #
 # From https://hub.docker.com/_/alpine/
-#
+
 FROM alpine:latest
 
 RUN apk update \
