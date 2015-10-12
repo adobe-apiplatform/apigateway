@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: myrc-apigateway-frontend
+spec:
+  replicas: 2
+  selector:
+    service: apigateway-frontend
+    build: build${{buildNum}}
+  template:
+    metadata:
+      name: mytemplate-apigateway-frontend
+      labels:
+        service: apigateway-frontend #must match the selector of the rc, used for linking pods to services
+        build: build${{buildNum}}
+    spec:
+      containers: #many containers can be specified here that will be scheduled together onto the same host
+      - name: aboutme #first container
+        image: quay.io/concur_platform/apigateway-frontend:${{buildNum}} #container image location
+        ports:
+        - containerPort: 3000 #port running inside and outside the container on the pod IP address
+        #  hostPort: 3000 #not required but shown here, can be used to expose the container port directly on the kubernetes node
+        env: #environment variables provided to the container, there are also default ones created for each container that can be leveraged cluster wide.
+          -
+            name: "DB_SERVER"
+            value: "mysql-service" #this can be a service endpoint that will be static, external value stored in a registry
+            #kubernetes adds a cluster wide dns entry for any service created. 
+        livenessProbe: #health check configuration
+          httpGet: #http shown here, you can also detail out a command\script to execute inside the container that expects a 0 status code.
+            path: /
+            port: 3000
+          initialDelaySeconds: 15
+          timeoutSeconds: 1
+        readinessProbe: #health check configuration
+          httpGet: #http shown here, you can also detail out a command\script to execute inside the container that expects a 0 status code.
+            path: /
+            port: 3000
+          initialDelaySeconds: 15
+          timeoutSeconds: 1
+#        command: # command to execute inside the container on creation
+#        - "npm start"

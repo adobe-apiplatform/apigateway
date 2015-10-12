@@ -26,6 +26,14 @@ log_level=${LOG_LEVEL:-warn}
 marathon_host=$(echo $MARATHON_HOST)
 sleep_duration=${MARATHON_POLL_INTERVAL:-5}
 
+apk update
+apk add jq
+
+VAULT_RESPONSE=`curl http://54.186.36.101:8200/v1/secret/gatewayssl`
+
+echo $VAULT_RESPONSE | jq -r .data.key > /etc/ssl/certs/api.concursolutions.com.key
+echo $VAULT_RESPONSE | jq -r .data.cert > /etc/ssl/certs/api.concursolutions.com.cert
+
 echo "Starting api-gateway ..."
 if [ "${debug_mode}" == "true" ]; then
     echo "   ...  in DEBUG mode "

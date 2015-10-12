@@ -1,0 +1,22 @@
+machine:
+  timezone:
+    America/Los_Angeles
+  services:
+    - docker
+
+dependencies:
+  pre:
+    - sudo apt-get -y update
+    - ./build/login_quay.sh
+  post:
+    - docker version
+    - echo ${CIRCLE_BRANCH}
+    - if [ ${CIRCLE_BRANCH} != "master" ]; then docker build -t quay.io/concur_platform/apigateway-frontend:build${CIRCLE_BUILD_NUM} . ; fi
+    - if [ ${CIRCLE_BRANCH} != "master" ]; then docker tag quay.io/concur_platform/apigateway-frontend:build${CIRCLE_BUILD_NUM} quay.io/concur_platform/apigateway-frontend:v1 ; fi
+    - if [ ${CIRCLE_BRANCH} != "master" ]; then docker tag quay.io/concur_platform/apigateway-frontend:build${CIRCLE_BUILD_NUM} quay.io/concur_platform/apigateway-frontend:latest ; fi
+
+deployment:
+  preview:
+    branch: dev
+    commands:
+      - docker push quay.io/concur_platform/apigateway-frontend
