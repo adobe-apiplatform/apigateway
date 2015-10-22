@@ -22,8 +22,17 @@ For example, if you have an application named `hello-world` you can access it on
  1. Edit `/etc/hosts` and add `<docker_host_ip> hello-world.api.localhost` then browse to `http://hello-world.api.localhost`
  2. Sending the Host header in a curl command: `curl -H "Host:hello-world.api.localhost" http://<docker_host_ip>`
 
-The [discovery script](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/marathon-service-discovery.sh) is provided as an example for a quick-start and it can be replaced with your favourite discovery mechanism.
-The script updates a [configuration file](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/environment.conf.d/api-gateway-upstreams.http.conf) containing all the NGINX upstreams that are used in the [config file](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/conf.d/marathon_apis.conf#L36).
+The [polling discovery script](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/marathon-poll.sh) is provided as an polling example for a quick-start and it can be replaced with your favourite discovery mechanism.
+The [event based discovery script](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/marathon-events.sh) is provided as an event based example that listens for marathon deployment events.
+Both scripts cause updates to [configuration file](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/environment.conf.d/api-gateway-upstreams.http.conf) containing all the NGINX upstreams that are used in the [config file](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/conf.d/marathon_apis.conf#L36).
+
+Both scripts rely on the [goji config generator](https://github.com/byxorna/goji) to generate the upstream configs. To rely on these config changes you must:
+* customize the [goji.conf](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/goji.conf) to reference your marathon appids
+* (optional) customize [goji-nginx.tmpl](https://github.com/adobe-apiplatform/apigateway/blob/master/api-gateway-config/goji-nginx.tmpl) to customize the upstream rendering
+
+Note that currently this requires that the hostname used by the api gateway is resolvable by the host where marathon is running.
+(see https://github.com/byxorna/goji/issues/12)
+
 
 #### Resolvers
 While starting up this container automatically creates the `/etc/api-gateway/conf.d/includes/resolvers.conf` config file using `/etc/resolv.conf` as the source.
