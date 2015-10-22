@@ -43,7 +43,12 @@ if [[ -n "${marathon_host}" ]]; then
     echo "  ... starting Marathon Service Discovery on ${marathon_host}"
     touch /var/run/apigateway-config-watcher.lastrun
     # start marathon's service discovery
-    while true; do /etc/api-gateway/marathon-service-discovery.sh > /dev/stderr; sleep ${sleep_duration}; done &
+    #    init config
+    /etc/api-gateway/marathon-init.sh > /dev/stderr
+    #    start event listener
+    /etc/api-gateway/marathon-events.sh > /dev/stderr &
+    #    start polling
+    while true; do /etc/api-gateway/marathon-poll.sh > /dev/stderr; sleep ${sleep_duration}; done &
     # start simple statsd logger
     #
     # ASSUMPTION: there is a graphite app named "api-gateway-graphite" deployed in marathon

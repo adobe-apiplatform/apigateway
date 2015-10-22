@@ -1,0 +1,9 @@
+# should be included in a conf.d directory
+{{range $index, $service := . }}{{if $service.HTTPProtocol }}{{ $backend := $service.EscapeAppIdUnderscore }}
+
+upstream {{$backend}} { {{ range $i, $task := $service.Tasks }}
+  server {{ $task.Host }}:{{ index $task.Ports 0 }} fail_timeout=10s;{{end}}
+  keepalive 10;
+}
+
+{{end}}{{end}}{{end}}

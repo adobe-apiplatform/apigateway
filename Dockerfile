@@ -17,6 +17,13 @@ ENV PCRE_VERSION 8.37
 ENV TEST_NGINX_VERSION 0.24
 ENV HMAC_LUA_VERSION 1.0.0
 ENV REQUEST_VALIDATION_VERSION 1.0.1
+ENV GOJI_VERSION 0.2.0
+ENV GOLANG_VERSION 1.4.3
+ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go$GOLANG_VERSION.src.tar.gz
+ENV GOLANG_DOWNLOAD_SHA1 486db10dc571a55c8d795365070f66d343458c48
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/src/go/bin:$PATH
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
 RUN mkdir -p /tmp/api-gateway/
 
@@ -92,6 +99,19 @@ RUN  cd /tmp/api-gateway/ \
     && make install \
          LUA_LIB_DIR=${_exec_prefix}/api-gateway/lualib \
          INSTALL=/tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION}/build/install \
+    && echo " ... installing go ..." \
+    && curl -L "$GOLANG_DOWNLOAD_URL" -o /tmp/api-gateway/golang.tar.gz -o /tmp/api-gateway/ \
+    && echo "$GOLANG_DOWNLOAD_SHA1  /tmp/api-gateway/golang.tar.gz" | sha1sum -c - \
+    && mkdir -p /usr/local/src \
+    && tar -xzf /tmp/api-gateway/golang.tar.gz -C /usr/local/src/ \
+    && rm /tmp/api-gateway/golang.tar.gz \
+    && cd /usr/local/src/go/src && ./make.bash --no-clean 2>&1 \
+    && echo " ... installing goji ..." \
+    && mkdir -p $GOPATH/src/github.com/byxorna \
+    && curl -L https://github.com/byxorna/goji/archive/${GOJI_VERSION}.tar.gz -o /tmp/api-gateway/goji-${GOJI_VERSION}.tar.gz \
+    && tar -xf /tmp/api-gateway/goji-${GOJI_VERSION}.tar.gz -C $GOPATH/src/github.com/byxorna \
+    && mv $GOPATH/src/github.com/byxorna/goji-${GOJI_VERSION} $GOPATH/src/github.com/byxorna/goji \
+    && go install github.com/byxorna/goji \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway \
     && echo " ... adding Nginx Test support" \
