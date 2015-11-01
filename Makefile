@@ -39,6 +39,17 @@ docker-stop:
 	docker stop apigateway
 	docker rm apigateway
 
+.PHONY: docker-compose
+docker-compose:
+	#Volumes directories must be under your Users directory
+	mkdir -p ${HOME}/tmp/apiplatform/apigateway
+	rm -rf ${HOME}/tmp/apiplatform/apigateway/api-gateway-config
+	cp -r `pwd`/api-gateway-config ${HOME}/tmp/apiplatform/apigateway/
+	sed -i '' 's/127\.0\.0\.1/redis\.docker/' ${HOME}/tmp/apiplatform/apigateway/api-gateway-config/environment.conf.d/api-gateway-upstreams.http.conf
+	# clone api-gateway-redis block
+	sed -e '/api-gateway-redis/,/}/!d' ${HOME}/tmp/apiplatform/apigateway/api-gateway-config/environment.conf.d/api-gateway-upstreams.http.conf | sed 's/-redis/-redis-replica/' >> ${HOME}/tmp/apiplatform/apigateway/api-gateway-config/environment.conf.d/api-gateway-upstreams.http.conf
+	docker-compose up
+
 .PHONY: docker-push
 docker-push:
 	docker tag -f adobeapiplatform/apigateway $(DOCKER_REGISTRY)/adobeapiplatform/apigateway:$(DOCKER_TAG)

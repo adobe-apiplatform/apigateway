@@ -1,0 +1,16 @@
+gateway:
+  name: apigateway
+  image: adobeapiplatform/apigateway
+  links:
+    - redis:redis.docker
+  volumes:
+    - ~/tmp/apiplatform/apigateway/api-gateway-config/:/etc/api-gateway
+  ports:
+  - "80:80"
+  environment:
+  - LOG_LEVEL=info
+  - DEBUG=true
+redis:
+  image: redis:2.8
+  ports:
+  - "6379:6379"

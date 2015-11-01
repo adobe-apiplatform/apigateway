@@ -73,6 +73,13 @@ To learn more about this option visit [NGINX docs](http://nginx.org/en/docs/debu
  make docker-stop
  ```
 
+### Enabling API KEY Management through Redis
+
+This command starts two docker containers: redis and gateway
+ ```
+ make docker-compose
+ ```
+
 ### SSH into the running image
 
 ```
