@@ -21,13 +21,14 @@
 # * DEALINGS IN THE SOFTWARE.
 # *
 # */
-debug_mode=$(echo $DEBUG)
+debug_mode=${DEBUG}
 log_level=${LOG_LEVEL:-warn}
-marathon_host=$(echo $MARATHON_HOST)
+marathon_host=${MARATHON_HOST}
 sleep_duration=${MARATHON_POLL_INTERVAL:-5}
 # location for a remote /etc/api-gateway folder.
 # i.e s3://api-gateway-config
-remote_config=$(echo $REMOTE_CONFIG)
+remote_config=${REMOTE_CONFIG}
+remote_config_sync_interval=${REMOTE_CONFIG_SYNC_INTERVAL:-10s}
 
 echo "Starting api-gateway ..."
 if [ "${debug_mode}" == "true" ]; then
@@ -45,7 +46,7 @@ echo "   ...  with dns $(cat /etc/api-gateway/conf.d/includes/resolvers.conf)"
 sync_cmd="echo checking for changes ..."
 if [[ -n "${remote_config}" ]]; then
     echo "   ... using a remote config from: ${remote_config}"
-    if [[ ${remote_config} == s3://* ]]; then
+    if [[ "${remote_config}" =~ ^s3://.+ ]]; then
       sync_cmd="aws s3 sync --exclude *resolvers.conf --exclude *environment.conf.d/*upstreams.http.conf --delete ${remote_config} /etc/api-gateway/"
       echo "   ... syncing from s3 using command ${sync_cmd}"
     else
@@ -55,7 +56,7 @@ fi
 api-gateway-config-supervisor \
         --reload-cmd="api-gateway -s reload" \
         --sync-folder=/etc/api-gateway \
-        --sync-interval=10s \
+        --sync-interval=${remote_config_sync_interval} \
         --sync-cmd="${sync_cmd}" \
         --http-addr=127.0.0.1:8888 &
 
