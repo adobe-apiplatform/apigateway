@@ -70,18 +70,8 @@ if [ ${redis_master} -eq 0 ]; then
 fi
 
 # 2 check for changes
-changed_files=$(find /etc/api-gateway -type f -newer /var/run/apigateway-config-watcher.lastrun -print)
 cmp -s ${TMP_FILE} ${UPSTREAM_FILE}
 changed_upstreams=$?
-if [[ \( -n "${changed_files}" \) -o \( ${changed_upstreams} -gt 0 \) ]]; then
-    info_log "discovered changed files ..."
-    info_log ${changed_files}
+if [[ \( ${changed_upstreams} -gt 0 \) ]]; then
     cp ${TMP_FILE} ${UPSTREAM_FILE}
-    echo `date` > /var/run/apigateway-config-watcher.lastrun
-    info_log "reloading gateway ..."
-    api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf && api-gateway -s reload
 fi
-echo `date` > /var/run/apigateway-config-watcher.lastrun
-
-# 2. diff with an existing one
-# cmp -b $TMP_FILE $UPSTREAM_FILE || (info_log "discovered a change..." && cp $TMP_FILE $UPSTREAM_FILE && info_log "reloading gateway ..." && api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf && api-gateway -s reload)
