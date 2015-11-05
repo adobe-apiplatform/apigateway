@@ -101,6 +101,49 @@ RUN  cd /tmp/api-gateway/ \
     && rm /usr/local/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
     && ln -s /usr/local/sbin/api-gateway-debug /usr/local/sbin/nginx
 
+ENV CONFIG_SUPERVISOR_VERSION initial-poc
+ENV GOPATH /usr/lib/go/bin
+ENV GOBIN  /usr/lib/go/bin
+ENV PATH   $PATH:/usr/lib/go/bin
+RUN echo " ... adding api-gateway-config-supervisor  ... " \
+    && echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && apk update \
+    && apk add make git go \
+    && mkdir -p /tmp/api-gateway \
+    && curl -L https://github.com/adobe-apiplatform/api-gateway-config-supervisor/archive/${CONFIG_SUPERVISOR_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
+    && cd /tmp/api-gateway \
+    && tar -xf /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
+    && mkdir -p /tmp/go \
+    && mv /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}/* /tmp/go \
+    && cd /tmp/go \
+    && make setup \
+    && mkdir -p /tmp/go/Godeps/_workspace \
+    && ln -s /tmp/go/vendor /tmp/go/Godeps/_workspace/src \
+    && mkdir -p /tmp/go-src/src/github.com/adobe-apiplatform \
+    && ln -s /tmp/go /tmp/go-src/src/github.com/adobe-apiplatform/api-gateway-config-supervisor \
+    && GOPATH=/tmp/go/vendor:/tmp/go-src CGO_ENABLED=0 GOOS=linux /usr/lib/go/bin/godep  go build -ldflags "-s" -a -installsuffix cgo -o api-gateway-config-supervisor ./ \
+    && mv /tmp/go/api-gateway-config-supervisor /usr/local/sbin/ \
+
+    && echo "installing rclone sync ... " \
+    && go get github.com/ncw/rclone \
+    && mv /usr/lib/go/bin/rclone /usr/local/sbin/ \
+
+    && echo " cleaning up ... " \
+    && rm -rf /usr/lib/go/bin/src \
+    && rm -rf /tmp/go \
+    && rm -rf /tmp/go-src \
+    && rm -rf /usr/lib/go/bin/pkg/ \
+    && rm -rf /usr/lib/go/bin/godep \
+    && apk del make git go \
+    && rm -rf /var/cache/apk/*
+
+RUN echo " installing aws-cli ..." \
+    && apk update \
+    && apk add python \
+    && apk add py-pip \
+    && pip install --upgrade pip \
+    && pip install awscli
+
 
 COPY init.sh /etc/init-container.sh
 ONBUILD COPY init.sh /etc/init-container.sh
