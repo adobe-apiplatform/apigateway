@@ -1,6 +1,6 @@
 # apigateway
 #
-# VERSION               1.9.3.1
+# VERSION               1.9.7.3
 #
 # From https://hub.docker.com/_/alpine/
 #
@@ -9,9 +9,10 @@ FROM alpine:latest
 RUN apk update \
     && apk add gcc tar libtool zlib jemalloc jemalloc-dev perl \ 
     make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
-    perl-test-longstring perl-list-moreutils perl-http-message
+    perl-test-longstring perl-list-moreutils perl-http-message \
+    geoip-dev
 
-ENV OPENRESTY_VERSION 1.9.3.1
+ENV OPENRESTY_VERSION 1.9.7.3
 ENV NAXSI_VERSION 0.53-2
 ENV PCRE_VERSION 8.37
 ENV TEST_NGINX_VERSION 0.24
@@ -22,14 +23,14 @@ RUN mkdir -p /tmp/api-gateway/
 
 RUN  cd /tmp/api-gateway/ \
      && curl -L https://github.com/nbs-system/naxsi/archive/${NAXSI_VERSION}.tar.gz -o /tmp/api-gateway/naxsi-${NAXSI_VERSION}.tar.gz \
-     && curl -L http://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/prce-${PCRE_VERSION}.tar.gz \
-     && curl -L https://github.com/adobe-apiplatform/apigateway/releases/download/openresty_backup_1.9.3.1/ngx_openresty-1.9.3.1.tar.gz -o /tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION}.tar.gz \
+     && curl -L http://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
+     && curl -L https://openresty.org/download/openresty-{OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
      && curl -L https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
      && curl -L https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz \
-     && tar -xf ./ngx_openresty-${OPENRESTY_VERSION}.tar.gz \
-     && tar -xf ./prce-${PCRE_VERSION}.tar.gz \
+     && tar -xf ./openresty-${OPENRESTY_VERSION}.tar.gz \
+     && tar -xf ./pcre-${PCRE_VERSION}.tar.gz \
      && tar -xf ./naxsi-${NAXSI_VERSION}.tar.gz \
-     && cd /tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION} \ 
+     && cd /tmp/api-gateway/openresty-${OPENRESTY_VERSION} \ 
      && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
      && echo "using up to $NPROC threads" \
      && _prefix="/usr/local" \
@@ -48,8 +49,23 @@ RUN  cd /tmp/api-gateway/ \
             --lock-path=${_localstatedir}/run/api-gateway.lock \
             --add-module=../naxsi-${NAXSI_VERSION}/naxsi_src/ \
             --with-pcre=../pcre-${PCRE_VERSION}/ --with-pcre-jit \
+            --with-stream \
+            --with-stream_ssl_module \
             --with-http_ssl_module \
             --with-http_stub_status_module \
+            --with-http_realip_module \
+            --with-http_addition_module \
+            --with-http_sub_module \
+            --with-http_dav_module \
+            --with-http_geoip_module \
+            --with-http_gunzip_module  \
+            --with-http_gzip_static_module \
+            --with-http_auth_request_module \
+            --with-http_random_index_module \
+            --with-http_secure_link_module \
+            --with-http_degradation_module \
+            --with-http_auth_request_module  \
+            --with-http_v2_module \
             --with-luajit \
             --without-http_ssi_module \
             --without-http_userid_module \
@@ -70,8 +86,23 @@ RUN  cd /tmp/api-gateway/ \
             --lock-path=${_localstatedir}/run/api-gateway.lock \
             --add-module=../naxsi-${NAXSI_VERSION}/naxsi_src/ \
             --with-pcre=../pcre-${PCRE_VERSION}/ --with-pcre-jit \
+            --with-stream \
+            --with-stream_ssl_module \
             --with-http_ssl_module \
             --with-http_stub_status_module \
+            --with-http_realip_module \
+            --with-http_addition_module \
+            --with-http_sub_module \
+            --with-http_dav_module \
+            --with-http_geoip_module \
+            --with-http_gunzip_module  \
+            --with-http_gzip_static_module \
+            --with-http_auth_request_module \
+            --with-http_random_index_module \
+            --with-http_secure_link_module \
+            --with-http_degradation_module \
+            --with-http_auth_request_module  \
+            --with-http_v2_module \
             --with-luajit \
             --without-http_ssi_module \
             --without-http_userid_module \
@@ -85,13 +116,14 @@ RUN  cd /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION} \
     && make install \
          LUA_LIB_DIR=${_exec_prefix}/api-gateway/lualib \
-         INSTALL=/tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION}/build/install \
+         INSTALL=/tmp/api-gateway/openresty-${OPENRESTY_VERSION}/build/install \
     && echo " ... installing api-gateway-request-validation ..." \
     && tar -xf /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION} \
     && make install \
          LUA_LIB_DIR=${_exec_prefix}/api-gateway/lualib \
-         INSTALL=/tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION}/build/install \
+         INSTALL=/tmp/api-gateway/openresty-${OPENRESTY_VERSION}/build/install \
+    && apk del g++ gcc make \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway \
     && echo " ... adding Nginx Test support" \
