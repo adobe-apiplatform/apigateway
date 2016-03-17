@@ -14,17 +14,15 @@ RUN apk update \
     geoip-dev
 
 # openresty build
-ENV OPENRESTY_VERSION 1.9.7.3
-ENV NAXSI_VERSION 0.53-2
-ENV PCRE_VERSION 8.37
-ENV TEST_NGINX_VERSION 0.24
-ENV HMAC_LUA_VERSION 1.0.0
-ENV REQUEST_VALIDATION_VERSION 1.0.1
-ENV _prefix /usr/local
-ENV _exec_prefix /usr/local
-ENV _localstatedir /var
-ENV _sysconfdir /etc
-ENV _sbindir /usr/local/sbin
+ENV OPENRESTY_VERSION=1.9.7.3 \
+    NAXSI_VERSION=0.53-2 \
+    PCRE_VERSION=8.37 \
+    TEST_NGINX_VERSION=0.24 \
+    _prefix=/usr/local \
+    _exec_prefix=/usr/local \
+    _localstatedir=/var \
+    _sysconfdir=/etc \
+    _sbindir=/usr/local/sbin
 
 RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
      && mkdir -p /tmp/api-gateway \
@@ -32,9 +30,9 @@ RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
      && echo "using up to $NPROC threads" \
 
      && cd /tmp/api-gateway/ \
-     && curl -L https://github.com/nbs-system/naxsi/archive/${NAXSI_VERSION}.tar.gz -o /tmp/api-gateway/naxsi-${NAXSI_VERSION}.tar.gz \
-     && curl -L http://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
-     && curl -L https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
+     && curl -k -L https://github.com/nbs-system/naxsi/archive/${NAXSI_VERSION}.tar.gz -o /tmp/api-gateway/naxsi-${NAXSI_VERSION}.tar.gz \
+     && curl -k -L http://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
+     && curl -k -L https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -zxf ./openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -zxf ./pcre-${PCRE_VERSION}.tar.gz \
      && tar -zxf ./naxsi-${NAXSI_VERSION}.tar.gz \
@@ -116,7 +114,7 @@ RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
     && make install \
 
     && echo "        - adding Nginx Test support" \
-    && curl -L https://github.com/openresty/test-nginx/archive/v${TEST_NGINX_VERSION}.tar.gz -o ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
+    && curl -k -L https://github.com/openresty/test-nginx/archive/v${TEST_NGINX_VERSION}.tar.gz -o ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
     && cd ${_prefix} \
     && tar -xf ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
     && rm ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
@@ -128,52 +126,6 @@ RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV HMAC_LUA_VERSION 1.0.0
-RUN echo " ... installing api-gateway-hmac ..." \
-        && apk update \
-        && apk add make \
-        && mkdir -p /tmp/api-gateway \
-        && curl -L https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz \
-        && tar -xf /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz -C /tmp/api-gateway/ \
-        && cd /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION} \
-        && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
-        && make test \
-        && make install \
-             LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
-             INSTALL=${_prefix}/api-gateway/bin/resty-install \
-        && rm -rf /tmp/api-gateway
-
-ENV REQUEST_VALIDATION_VERSION 1.0.2
-RUN echo " ... installing api-gateway-request-validation ..." \
-        && apk update \
-        && apk add make \
-        && mkdir -p /tmp/api-gateway \
-        && curl -L https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
-        && tar -xf /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz -C /tmp/api-gateway/ \
-        && cd /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION} \
-        && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
-        && apk update && apk add redis \
-        && REDIS_SERVER=/usr/bin/redis-server make test \
-        && make install \
-             LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
-             INSTALL=${_prefix}/api-gateway/bin/resty-install \
-        && apk del redis \
-        && rm -rf /var/cache/apk/* \
-        && rm -rf /tmp/api-gateway
-
-ENV LUA_RESTY_HTTP_VERSION 0.07
-RUN echo " ... installing lua-resty-http..." \
-        && apk update \
-        && apk add make \
-        && mkdir -p /tmp/api-gateway \
-        && curl -L https://github.com/pintsized/lua-resty-http/archive/v${LUA_RESTY_HTTP_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz \
-        && tar -xf /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz -C /tmp/api-gateway/ \
-        && cd /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION} \
-        && make install \
-             LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
-             INSTALL=${_prefix}/api-gateway/bin/resty-install \
-        && rm -rf /tmp/api-gateway
-
 ENV CONFIG_SUPERVISOR_VERSION initial-poc
 ENV GOPATH /usr/lib/go/bin
 ENV GOBIN  /usr/lib/go/bin
@@ -183,7 +135,7 @@ RUN echo " ... installing api-gateway-config-supervisor  ... " \
     && apk update \
     && apk add make git go \
     && mkdir -p /tmp/api-gateway \
-    && curl -L https://github.com/adobe-apiplatform/api-gateway-config-supervisor/archive/${CONFIG_SUPERVISOR_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
+    && curl -k -L https://github.com/adobe-apiplatform/api-gateway-config-supervisor/archive/${CONFIG_SUPERVISOR_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
     && cd /tmp/api-gateway \
     && tar -xf /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
     && mkdir -p /tmp/go \
@@ -217,6 +169,69 @@ RUN echo " ... installing aws-cli ..." \
     && pip install --upgrade pip \
     && pip install awscli
 
+ENV HMAC_LUA_VERSION 1.0.0
+RUN echo " ... installing api-gateway-hmac ..." \
+    && apk update \
+    && apk add make \
+    && mkdir -p /tmp/api-gateway \
+    && curl -k -L https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz \
+    && tar -xf /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz -C /tmp/api-gateway/ \
+    && cd /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION} \
+    && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
+    && make test \
+    && make install \
+            LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
+            INSTALL=${_prefix}/api-gateway/bin/resty-install \
+    && rm -rf /tmp/api-gateway
+
+ENV REQUEST_VALIDATION_VERSION 1.0.2
+RUN echo " ... installing api-gateway-request-validation ..." \
+    && apk update \
+    && apk add make \
+    && mkdir -p /tmp/api-gateway \
+    && curl -k -L https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
+    && tar -xf /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz -C /tmp/api-gateway/ \
+    && cd /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION} \
+    && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
+    && apk update && apk add redis \
+    && REDIS_SERVER=/usr/bin/redis-server make test \
+    && make install \
+            LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
+            INSTALL=${_prefix}/api-gateway/bin/resty-install \
+    && apk del redis \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/api-gateway
+
+ENV LUA_RESTY_HTTP_VERSION 0.07
+RUN echo " ... installing lua-resty-http..." \
+    && apk update \
+    && apk add make \
+    && mkdir -p /tmp/api-gateway \
+    && curl -k -L https://github.com/pintsized/lua-resty-http/archive/v${LUA_RESTY_HTTP_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz \
+    && tar -xf /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz -C /tmp/api-gateway/ \
+    && cd /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION} \
+    && make install \
+            LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
+            INSTALL=${_prefix}/api-gateway/bin/resty-install \
+    && rm -rf /tmp/api-gateway
+
+ENV LUA_RESTY_IPUTILS_VERSION 0.2.0
+RUN echo " ... installing lua-resty-iputils..." \
+    && apk update \
+    && apk add make \
+    && mkdir -p /tmp/api-gateway \
+    && curl -k -L https://github.com/hamishforbes/lua-resty-iputils/archive/v${LUA_RESTY_IPUTILS_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz \
+    && tar -xf /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz -C /tmp/api-gateway/ \
+    && cd /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION} \
+    && export LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
+    && export INSTALL=${_prefix}/api-gateway/bin/resty-install \
+    && $INSTALL -d ${LUA_LIB_DIR}/resty \
+    && $INSTALL lib/resty/*.lua ${LUA_LIB_DIR}/resty/ \
+    && rm -rf /tmp/api-gateway
+
+RUN \
+    curl -k -s -o /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && \
+    chmod 755 /usr/local/bin/jq
 
 COPY init.sh /etc/init-container.sh
 ONBUILD COPY init.sh /etc/init-container.sh
