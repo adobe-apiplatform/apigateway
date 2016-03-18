@@ -230,8 +230,11 @@ RUN echo " ... installing lua-resty-iputils..." \
     && rm -rf /tmp/api-gateway
 
 RUN \
-    curl -k -s -o /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && \
-    chmod 755 /usr/local/bin/jq
+    curl -L -k -s -o /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 \
+    && apk update \
+    && apk add gawk \
+    && chmod 755 /usr/local/bin/jq \
+    && rm -rf /var/cache/apk/*
 
 COPY init.sh /etc/init-container.sh
 ONBUILD COPY init.sh /etc/init-container.sh
