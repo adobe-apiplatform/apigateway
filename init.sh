@@ -47,7 +47,7 @@ sync_cmd="echo checking for changes ..."
 if [[ -n "${remote_config}" ]]; then
     echo "   ... using a remote config from: ${remote_config}"
     if [[ "${remote_config}" =~ ^s3://.+ ]]; then
-      sync_cmd="aws s3 sync --exclude *resolvers.conf --exclude *environment.conf.d/*upstreams.http.conf --delete ${remote_config} /etc/api-gateway/"
+      sync_cmd="aws s3 sync --exclude *resolvers.conf --exclude *environment.conf.d/*vars.server.conf --exclude *environment.conf.d/*upstreams.http.conf --delete ${remote_config} /etc/api-gateway/"
       echo "   ... syncing from s3 using command ${sync_cmd}"
     else
       echo "   ... but this REMOTE_CONFIG is not supported "
