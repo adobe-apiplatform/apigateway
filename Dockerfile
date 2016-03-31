@@ -22,7 +22,7 @@ RUN mkdir -p /tmp/api-gateway/
 
 RUN  cd /tmp/api-gateway/ \
      && curl -L https://github.com/nbs-system/naxsi/archive/${NAXSI_VERSION}.tar.gz -o /tmp/api-gateway/naxsi-${NAXSI_VERSION}.tar.gz \
-     && curl -L http://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/prce-${PCRE_VERSION}.tar.gz \
+     && curl -L ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/prce-${PCRE_VERSION}.tar.gz \
      && curl -L https://github.com/adobe-apiplatform/apigateway/releases/download/openresty_backup_1.9.3.1/ngx_openresty-1.9.3.1.tar.gz -o /tmp/api-gateway/ngx_openresty-${OPENRESTY_VERSION}.tar.gz \
      && curl -L https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
      && curl -L https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz \
