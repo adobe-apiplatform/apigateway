@@ -184,7 +184,7 @@ RUN echo " ... installing api-gateway-hmac ..." \
             INSTALL=${_prefix}/api-gateway/bin/resty-install \
     && rm -rf /tmp/api-gateway
 
-ENV REQUEST_VALIDATION_VERSION 1.0.2
+ENV REQUEST_VALIDATION_VERSION 1.1.1
 RUN echo " ... installing api-gateway-request-validation ..." \
     && apk update \
     && apk add make \
