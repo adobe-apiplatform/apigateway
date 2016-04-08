@@ -184,6 +184,24 @@ RUN echo " ... installing api-gateway-hmac ..." \
             INSTALL=${_prefix}/api-gateway/bin/resty-install \
     && rm -rf /tmp/api-gateway
 
+ENV CACHE_MANAGER_VERSION 1.0.0
+RUN echo " ... installing api-gateway-cachemanager..." \
+    && apk update \
+    && apk add make \
+    && mkdir -p /tmp/api-gateway \
+    && curl -k -L https://github.com/adobe-apiplatform/api-gateway-cachemanager/archive/${CACHE_MANAGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz \
+    && tar -xf /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
+    && cd /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION} \
+    && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
+    && apk update && apk add redis \
+    && REDIS_SERVER=/usr/bin/redis-server make test \
+    && make install \
+            LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
+            INSTALL=${_prefix}/api-gateway/bin/resty-install \
+    && apk del redis \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/api-gateway
+
 ENV REQUEST_VALIDATION_VERSION 1.1.1
 RUN echo " ... installing api-gateway-request-validation ..." \
     && apk update \
