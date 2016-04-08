@@ -1,5 +1,4 @@
 gateway:
-  name: apigateway
   image: adobeapiplatform/apigateway
   links:
     - redis:redis.docker
