@@ -126,6 +126,33 @@ RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
+ENV LUA_RESTY_HTTP_VERSION 0.07
+RUN echo " ... installing lua-resty-http..." \
+    && apk update \
+    && apk add make \
+    && mkdir -p /tmp/api-gateway \
+    && curl -k -L https://github.com/pintsized/lua-resty-http/archive/v${LUA_RESTY_HTTP_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz \
+    && tar -xf /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz -C /tmp/api-gateway/ \
+    && cd /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION} \
+    && make install \
+            LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
+            INSTALL=${_prefix}/api-gateway/bin/resty-install \
+    && rm -rf /tmp/api-gateway
+
+ENV LUA_RESTY_IPUTILS_VERSION 0.2.0
+RUN echo " ... installing lua-resty-iputils..." \
+    && apk update \
+    && apk add make \
+    && mkdir -p /tmp/api-gateway \
+    && curl -k -L https://github.com/hamishforbes/lua-resty-iputils/archive/v${LUA_RESTY_IPUTILS_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz \
+    && tar -xf /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz -C /tmp/api-gateway/ \
+    && cd /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION} \
+    && export LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
+    && export INSTALL=${_prefix}/api-gateway/bin/resty-install \
+    && $INSTALL -d ${LUA_LIB_DIR}/resty \
+    && $INSTALL lib/resty/*.lua ${LUA_LIB_DIR}/resty/ \
+    && rm -rf /tmp/api-gateway
+
 ENV CONFIG_SUPERVISOR_VERSION 1.0.0
 ENV GOPATH /usr/lib/go/bin
 ENV GOBIN  /usr/lib/go/bin
@@ -202,6 +229,22 @@ RUN echo " ... installing api-gateway-cachemanager..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
+ENV AWS_VERSION 1.7.0
+RUN echo " ... installing api-gateway-aws ..." \
+    && apk update \
+    && apk add make \
+    && mkdir -p /tmp/api-gateway \
+    && curl -k -L https://github.com/adobe-apiplatform/api-gateway-aws/archive/${AWS_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz \
+    && tar -xf /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz -C /tmp/api-gateway/ \
+    && cd /tmp/api-gateway/api-gateway-aws-${AWS_VERSION} \
+    && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
+    && make test \
+    && make install \
+            LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
+            INSTALL=${_prefix}/api-gateway/bin/resty-install \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/api-gateway
+
 ENV REQUEST_VALIDATION_VERSION 1.1.1
 RUN echo " ... installing api-gateway-request-validation ..." \
     && apk update \
@@ -218,33 +261,6 @@ RUN echo " ... installing api-gateway-request-validation ..." \
             INSTALL=${_prefix}/api-gateway/bin/resty-install \
     && apk del redis \
     && rm -rf /var/cache/apk/* \
-    && rm -rf /tmp/api-gateway
-
-ENV LUA_RESTY_HTTP_VERSION 0.07
-RUN echo " ... installing lua-resty-http..." \
-    && apk update \
-    && apk add make \
-    && mkdir -p /tmp/api-gateway \
-    && curl -k -L https://github.com/pintsized/lua-resty-http/archive/v${LUA_RESTY_HTTP_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz \
-    && tar -xf /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz -C /tmp/api-gateway/ \
-    && cd /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION} \
-    && make install \
-            LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
-            INSTALL=${_prefix}/api-gateway/bin/resty-install \
-    && rm -rf /tmp/api-gateway
-
-ENV LUA_RESTY_IPUTILS_VERSION 0.2.0
-RUN echo " ... installing lua-resty-iputils..." \
-    && apk update \
-    && apk add make \
-    && mkdir -p /tmp/api-gateway \
-    && curl -k -L https://github.com/hamishforbes/lua-resty-iputils/archive/v${LUA_RESTY_IPUTILS_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz \
-    && tar -xf /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz -C /tmp/api-gateway/ \
-    && cd /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION} \
-    && export LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
-    && export INSTALL=${_prefix}/api-gateway/bin/resty-install \
-    && $INSTALL -d ${LUA_LIB_DIR}/resty \
-    && $INSTALL lib/resty/*.lua ${LUA_LIB_DIR}/resty/ \
     && rm -rf /tmp/api-gateway
 
 RUN \
