@@ -126,7 +126,7 @@ RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV CONFIG_SUPERVISOR_VERSION initial-poc
+ENV CONFIG_SUPERVISOR_VERSION 1.0.0
 ENV GOPATH /usr/lib/go/bin
 ENV GOBIN  /usr/lib/go/bin
 ENV PATH   $PATH:/usr/lib/go/bin
