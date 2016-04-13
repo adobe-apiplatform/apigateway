@@ -129,12 +129,12 @@ Performance
 
 The following performance tests results have been obtained on a virtual machine with 8 CPU cores and 4GB Memory.
 
-The API Gateway container has been started with :
+The API Gateway container has been started with 4 CPU cores and `net=host` :
 ```bash
 docker run --cpuset-cpus=0-3 --net=host --name="apigateway" -e "LOG_LEVEL=notice" adobeapiplatform/apigateway:latest
 ```
 
-WRK test has been started with:
+WRK test has been started with 4 CPU cores and `net=host`:
 ```bash
 docker run --cpuset-cpus=4-7 --net=host williamyeh/wrk:4.0.1 -t4 -c1000 -d30s http://<docker_host_ip>/health-check
 Running 30s test @ http://192.168.75.158/health-check
