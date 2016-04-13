@@ -70,7 +70,7 @@ if [[ -n "${marathon_host}" ]]; then
     # ASSUMPTION: there is a graphite app named "api-gateway-graphite" deployed in marathon
     #
     while true; do \
-        statsd_host=$(curl -s ${marathon_host}/v2/apps/api-gateway-graphite/tasks -H "Accept:text/plain" | grep 8125 | awk '{for(i=3;i<=NF;++i) printf("%s ", $i) }' | awk '{for(i=1;i<=NF;++i) sub(/\:\d+/,"",$i); print }' ); \
+        statsd_host=$(curl -s ${marathon_host}/v2/apps/api-gateway-graphite/tasks -H "Accept:text/plain" | grep 8125 | awk '{for(i=3;i<=NF;++i) printf("%s ", $i) }' | awk '{for(i=1;i<=NF;++i) sub(/:[[:digit:]]+/,"",$i); print }' ); \
         if [[ -n "${statsd_host}" ]]; then python /etc/api-gateway/scripts/python/logger/StatsdLogger.py --statsd-host=${statsd_host} > /var/log/api-gateway/statsd-logger.log; fi; \
         sleep 6; \
     done &
