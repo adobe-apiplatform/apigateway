@@ -263,7 +263,7 @@ RUN echo " ... installing api-gateway-request-validation ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV ASYNC_LOGGER_VERSION 1.0.0
+ENV ASYNC_LOGGER_VERSION 1.0.1
 RUN echo " ... installing api-gateway-async-logger ..." \
     && apk update \
     && apk add make \
