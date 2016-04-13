@@ -80,6 +80,33 @@ To learn more about the `resolver` directive in NGINX see the [docs](http://ngin
 #### Running the API Gateway outside of Marathon and Mesos
 Besides the discovery part which is dependent on Marathon at the  moment, the API Gateway can run on its own as well. The Marathon service discovery is activated with the ` -e "MARATHON_HOST=http://<marathon_host>:<port>/"`.
 
+### What's inside
+
+|--------------|------------|--------------|
+|   Module     |   Version  |  Details     |
+| [Openresty](https://github.com/openresty/) | 1.9.7.3 | Installed in `/usr/local/sbin/api-gateway` |
+| [Openresty](https://github.com/openresty/) compiled `--with-debug` | 1.9.7.3 |  Installed in `/usr/local/sbin/api-gateway-debug` which enables [debugging log](http://nginx.org/en/docs/debugging_log.html) |
+| [Test Nginx](https://github.com/openresty/test-nginx) | [0.24](https://github.com/openresty/test-nginx/releases/tag/v0.24) | Useful for executing integration tests from the container. <br/> It's installed in `/usr/local/test-nginx-0.24/`. <br/> It's also used during Docker build to execute `make test` on lua modules.  |
+| [PCRE](https://sourceforge.net/projects/pcre/) | [8.37](https://sourceforge.net/projects/pcre/files/pcre/8.37/) | Enables PCRE JIT support | 
+| [NAXSI](https://github.com/nbs-system/naxsi) | [0.53-2](https://github.com/nbs-system/naxsi/releases/tag/0.53-2) |  NAXSI is an open-source, high performance, low rules maintenance WAF for NGINX |
+
+##### Modules for API Management and Logging
+|--------------|------------|--------------|
+|   Module     |   Version  |  Description |
+| [api-gateway-config-supervisor](https://github.com/adobe-apiplatform/api-gateway-config-supervisor) | [1.0.0](https://github.com/adobe-apiplatform/api-gateway-config-supervisor/releases/tag/1.0.0) | Syncs config files from Amazon S3 reloading the gateway with the updates |
+| [api-gateway-cachemanager](https://github.com/adobe-apiplatform/api-gateway-cachemanager) | [1.0.0](https://github.com/adobe-apiplatform/api-gateway-cachemanager/releases/tag/1.0.0) | Lua library for managing multiple cache stores |
+| [api-gateway-hmac](https://github.com/adobe-apiplatform/api-gateway-hmac) | [1.0.0](https://github.com/adobe-apiplatform/api-gateway-hmac/releases/tag/1.0.0) | HMAC support for Lua with multiple algorithms, via OpenSSL and FFI |
+| [api-gateway-aws](https://github.com/adobe-apiplatform/api-gateway-aws) | [1.7.0](https://github.com/adobe-apiplatform/api-gateway-aws/releases/tag/1.7.0) | AWS SDK for Nginx in Lua |
+| [api-gateway-request-validation](https://github.com/adobe-apiplatform/api-gateway-request-validation) | [1.1.1](https://github.com/adobe-apiplatform/api-gateway-request-validation/releases/tag/1.0.0) | API Request Validation framework  |
+| [api-gateway-async-logger](https://github.com/adobe-apiplatform/api-gateway-async-logger) | [1.0.0](https://github.com/adobe-apiplatform/api-gateway-async-logger/releases/tag/1.0.0) | Performant async logger |
+
+##### Other Lua Modules
+
+|--------------|------------|--------------|
+|   Module     |   Version  |  Description |
+| [lua-resty-http](https://github.com/pintsized/lua-resty-http) | [v0.07](https://github.com/pintsized/lua-resty-http/releases/tag/v0.07) | Lua HTTP client cosocket driver for OpenResty / ngx_lua |
+| [lua-resty-iputils](https://github.com/hamishforbes/lua-resty-iputils) | [v0.2.0](https://github.com/hamishforbes/lua-resty-iputils/releases/tag/v0.2.0) | Utility functions for working with IP addresses in Openresty |
+
 ### Developer guide
 
  To build the docker image locally use:
