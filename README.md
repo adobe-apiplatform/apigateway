@@ -1,8 +1,24 @@
-  apigateway
+ apigateway
 =============
 A performant API Gateway based on Openresty and NGINX.
 
-### Quick start
+Table of Contents
+=================
+
+* [Status](#status)
+* [Quick start](#quick-start)
+* [What's inside](#whats-inside)
+* [Performance](#performance)
+* [Developer Guide](#developer-guide)
+
+Status
+======
+
+The current project is considered production ready.
+
+
+Quick start
+===========
 
 ```
 docker run --name="apigateway" \
@@ -80,7 +96,8 @@ To learn more about the `resolver` directive in NGINX see the [docs](http://ngin
 #### Running the API Gateway outside of Marathon and Mesos
 Besides the discovery part which is dependent on Marathon at the  moment, the API Gateway can run on its own as well. The Marathon service discovery is activated with the ` -e "MARATHON_HOST=http://<marathon_host>:<port>/"`.
 
-### What's inside
+What's inside
+=============
 
 |--------------|------------|--------------|
 |   Module     |   Version  |  Details     |
@@ -107,7 +124,33 @@ Besides the discovery part which is dependent on Marathon at the  moment, the AP
 | [lua-resty-http](https://github.com/pintsized/lua-resty-http) | [v0.07](https://github.com/pintsized/lua-resty-http/releases/tag/v0.07) | Lua HTTP client cosocket driver for OpenResty / ngx_lua |
 | [lua-resty-iputils](https://github.com/hamishforbes/lua-resty-iputils) | [v0.2.0](https://github.com/hamishforbes/lua-resty-iputils/releases/tag/v0.2.0) | Utility functions for working with IP addresses in Openresty |
 
-### Developer guide
+Performance
+===========
+
+The following performance tests results have been obtained on a virtual machine with 8 CPU cores and 4GB Memory.
+
+The API Gateway container has been started with :
+```bash
+docker run --cpuset-cpus=0-3 --net=host --name="apigateway" -e "LOG_LEVEL=notice" adobeapiplatform/apigateway:latest
+```
+
+WRK test has been started with:
+```bash
+docker run --cpuset-cpus=4-7 --net=host williamyeh/wrk:4.0.1 -t4 -c1000 -d30s http://<docker_host_ip>/health-check
+Running 30s test @ http://192.168.75.158/health-check
+  4 threads and 1000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    30.38ms   73.80ms   1.16s    90.90%
+    Req/Sec    35.26k    11.98k   83.70k    68.72%
+  4214013 requests in 30.06s, 1.28GB read
+
+Requests/sec: 140165.09
+
+Transfer/sec:     43.57MB
+```
+
+Developer guide
+================
 
  To build the docker image locally use:
  ```
