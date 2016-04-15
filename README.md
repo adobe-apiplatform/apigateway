@@ -116,7 +116,7 @@ What's inside
 | [api-gateway-cachemanager](https://github.com/adobe-apiplatform/api-gateway-cachemanager) | [1.0.0](https://github.com/adobe-apiplatform/api-gateway-cachemanager/releases/tag/1.0.0) | Lua library for managing multiple cache stores |
 | [api-gateway-hmac](https://github.com/adobe-apiplatform/api-gateway-hmac) | [1.0.0](https://github.com/adobe-apiplatform/api-gateway-hmac/releases/tag/1.0.0) | HMAC support for Lua with multiple algorithms, via OpenSSL and FFI |
 | [api-gateway-aws](https://github.com/adobe-apiplatform/api-gateway-aws) | [1.7.0](https://github.com/adobe-apiplatform/api-gateway-aws/releases/tag/1.7.0) | AWS SDK for Nginx in Lua |
-| [api-gateway-request-validation](https://github.com/adobe-apiplatform/api-gateway-request-validation) | [1.1.1](https://github.com/adobe-apiplatform/api-gateway-request-validation/releases/tag/1.0.0) | API Request Validation framework  |
+| [api-gateway-request-validation](https://github.com/adobe-apiplatform/api-gateway-request-validation) | [1.1.1](https://github.com/adobe-apiplatform/api-gateway-request-validation/releases/tag/1.1.1) | API Request Validation framework  |
 | [api-gateway-async-logger](https://github.com/adobe-apiplatform/api-gateway-async-logger) | [1.0.1](https://github.com/adobe-apiplatform/api-gateway-async-logger/releases/tag/1.0.1) | Performant async logger |
 
 ##### Other Lua Modules
