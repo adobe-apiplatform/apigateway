@@ -211,7 +211,7 @@ RUN echo " ... installing api-gateway-hmac ..." \
             INSTALL=${_prefix}/api-gateway/bin/resty-install \
     && rm -rf /tmp/api-gateway
 
-ENV CACHE_MANAGER_VERSION 1.0.0
+ENV CACHE_MANAGER_VERSION 1.0.1
 RUN echo " ... installing api-gateway-cachemanager..." \
     && apk update \
     && apk add make \
