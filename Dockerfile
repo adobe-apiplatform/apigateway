@@ -13,6 +13,32 @@ RUN apk update \
     perl-test-longstring perl-list-moreutils perl-http-message \
     geoip-dev
 
+ENV ZMQ_VERSION 4.0.5
+ENV CZMQ_VERSION 2.2.0
+
+# Installing throttling dependencies
+RUN echo " ... adding throttling support with ZMQ and CZMQ" \
+         && curl -L http://download.zeromq.org/zeromq-${ZMQ_VERSION}.tar.gz -o /tmp/zeromq.tar.gz \
+         && cd /tmp/ \
+         && tar -xf /tmp/zeromq.tar.gz \
+         && cd /tmp/zeromq*/ \
+         && ./configure --prefix=/usr \
+                        --sysconfdir=/etc \
+                        --mandir=/usr/share/man \
+                        --infodir=/usr/share/info \
+         && make && make install \
+         && curl -L http://download.zeromq.org/czmq-${CZMQ_VERSION}.tar.gz -o /tmp/czmq.tar.gz \
+         && cd /tmp/ \
+         && tar -xf /tmp/czmq.tar.gz \
+         && cd /tmp/czmq*/ \
+         && ./configure --prefix=/usr \
+                        --sysconfdir=/etc \
+                        --mandir=/usr/share/man \
+                        --infodir=/usr/share/info \
+         && make && make install \
+         && rm -rf /tmp/zeromq* && rm -rf /tmp/czmq* \
+         && rm -rf /var/cache/apk/*
+
 # openresty build
 ENV OPENRESTY_VERSION=1.9.7.3 \
     NAXSI_VERSION=0.53-2 \
@@ -278,6 +304,48 @@ RUN echo " ... installing api-gateway-async-logger ..." \
             INSTALL=${_prefix}/api-gateway/bin/resty-install \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
+
+ENV ZMQ_ADAPTOR_VERSION 0.1.1
+RUN echo " ... installing api-gateway-zmq-adaptor" \
+         && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
+         && apk update \
+         && apk add check-dev g++ gcc \
+         && cd /tmp/ \
+         && tar -xf /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
+         && cd /tmp/api-gateway-zmq-adaptor-* \
+         && make test \
+         && PREFIX=/usr/local/sbin make install \
+         && rm -rf /tmp/api-gateway-zmq-adaptor-* \
+         && apk del check-dev g++ gcc \
+         && rm -rf /var/cache/apk/*
+
+ENV ZMQ_LOGGER_VERSION 1.0.0
+RUN echo " ... installing api-gateway-zmq-logger ..." \
+        && mkdir -p /tmp/api-gateway \
+        && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-logger/archive/${ZMQ_LOGGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz \
+        && tar -xf /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
+        && cd /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION} \
+        && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
+        && make test \
+        && make install \
+             LUA_LIB_DIR=/usr/local/api-gateway/lualib \
+             INSTALL=/usr/local/api-gateway/bin/resty-install \
+        && rm -rf /tmp/api-gateway
+
+ENV REQUEST_TRACKING_VERSION 1.0.1
+RUN echo " ... installing api-gateway-request-tracking ..." \
+        && mkdir -p /tmp/api-gateway \
+        && curl -L https://github.com/adobe-apiplatform/api-gateway-request-tracking/archive/${REQUEST_TRACKING_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION}.tar.gz \
+        && tar -xf /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION}.tar.gz -C /tmp/api-gateway/ \
+        && cd /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION} \
+        && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
+        && apk update && apk add redis \
+        && REDIS_SERVER=/usr/bin/redis-server make test \
+        && make install \
+             LUA_LIB_DIR=/usr/local/api-gateway/lualib \
+             INSTALL=/usr/local/api-gateway/bin/resty-install \
+        && apk del redis \
+        && rm -rf /tmp/api-gateway
 
 RUN \
     curl -L -k -s -o /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 \
