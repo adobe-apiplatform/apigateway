@@ -30,26 +30,29 @@ sleep_duration=${MARATHON_POLL_INTERVAL:-5}
 remote_config=${REMOTE_CONFIG}
 remote_config_sync_interval=${REMOTE_CONFIG_SYNC_INTERVAL:-10s}
 
-echo "Starting ZeroMQ adaptor ..."
-zmq_port=$(echo $ZMQ_PUBLISHER_PORT)
-# use -d flag to start API Gateway ZMQ adaptor in debug mode to print all messages sent by the GW
-zmq_adaptor_cmd="api-gateway-zmq-adaptor"
-if [[ -n "${zmq_port}" ]]; then
-    echo "... ZMQ will publish messages on:" ${zmq_port}
-    zmq_adaptor_cmd="${zmq_adaptor_cmd} -p ${zmq_port}"
-fi
-if [ "${debug_mode}" == "true" ]; then
-    echo "   ...  in DEBUG mode "
-    zmq_adaptor_cmd="${zmq_adaptor_cmd} -d"
-fi
+function start_zmq_adaptor()
+{
+    echo "Starting ZeroMQ adaptor ..."
+    zmq_port=$(echo $ZMQ_PUBLISHER_PORT)
+    # use -d flag to start API Gateway ZMQ adaptor in debug mode to print all messages sent by the GW
+    zmq_adaptor_cmd="api-gateway-zmq-adaptor"
+    if [[ -n "${zmq_port}" ]]; then
+        echo "... ZMQ will publish messages on:" ${zmq_port}
+        zmq_adaptor_cmd="${zmq_adaptor_cmd} -p ${zmq_port}"
+    fi
+    if [ "${debug_mode}" == "true" ]; then
+        echo "   ...  in DEBUG mode "
+        zmq_adaptor_cmd="${zmq_adaptor_cmd} -d"
+    fi
 
-$zmq_adaptor_cmd >> /dev/stderr &
-sleep 3s
-# allow interprocess communication by allowing api-gateway processes to write to the socket
-chmod 777 /tmp/nginx_queue_listen
-chmod 777 /tmp/nginx_queue_push
-# keep adaptor running using a simple loop
-while true; do zmq_pid=$(ps aux | grep api-gateway-zmq-adaptor | grep -v grep) || ( echo "Restarting api-gateway-zmq-adaptor" && $zmq_adaptor_cmd >> /dev/stderr & ); sleep 60; done &
+    $zmq_adaptor_cmd >> /dev/stderr &
+    sleep 3s
+    # allow interprocess communication by allowing api-gateway processes to write to the socket
+    chown nginx-api-gateway:nginx-api-gateway /tmp/nginx_queue_listen
+    chown nginx-api-gateway:nginx-api-gateway /tmp/nginx_queue_push
+}
+# keep the zmq adaptor running using a simple loop
+while true; do zmq_pid=$(ps aux | grep api-gateway-zmq-adaptor | grep -v grep) || ( echo "Restarting api-gateway-zmq-adaptor" && start_zmq_adaptor ); sleep 60; done &
 
 
 echo "Starting api-gateway ..."
