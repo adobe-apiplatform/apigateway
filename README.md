@@ -107,6 +107,9 @@ What's inside
 | [Test Nginx](https://github.com/openresty/test-nginx) | [0.24](https://github.com/openresty/test-nginx/releases/tag/v0.24) | Useful for executing integration tests from the container. <br/> It's installed in `/usr/local/test-nginx-0.24/`. <br/> It's also used during Docker build to execute `make test` on lua modules.  |
 | [PCRE](https://sourceforge.net/projects/pcre/) | [8.37](https://sourceforge.net/projects/pcre/files/pcre/8.37/) | Enables PCRE JIT support | 
 | [NAXSI](https://github.com/nbs-system/naxsi) | [0.53-2](https://github.com/nbs-system/naxsi/releases/tag/0.53-2) |  NAXSI is an open-source, high performance, low rules maintenance WAF for NGINX |
+| [ZeroMQ](http://download.zeromq.org/) | [4.0.5](http://zeromq.org/area:download) |  ZeroMQ |
+| [CZMQ](http://download.zeromq.org/) | [2.2.0](http://czmq.zeromq.org/page:get-the-software) |  CZMQ - High-level C Binding for ZeroMQ |
+
 
 ##### Modules for API Management and Logging
 
@@ -118,6 +121,8 @@ What's inside
 | [api-gateway-aws](https://github.com/adobe-apiplatform/api-gateway-aws) | [1.7.0](https://github.com/adobe-apiplatform/api-gateway-aws/releases/tag/1.7.0) | AWS SDK for Nginx in Lua |
 | [api-gateway-request-validation](https://github.com/adobe-apiplatform/api-gateway-request-validation) | [1.1.1](https://github.com/adobe-apiplatform/api-gateway-request-validation/releases/tag/1.1.1) | API Request Validation framework  |
 | [api-gateway-async-logger](https://github.com/adobe-apiplatform/api-gateway-async-logger) | [1.0.1](https://github.com/adobe-apiplatform/api-gateway-async-logger/releases/tag/1.0.1) | Performant async logger |
+| [api-gateway-zmq-logger](https://github.com/adobe-apiplatform/api-gateway-zmq-logger) | [1.0.0](https://github.com/adobe-apiplatform/api-gateway-zmq-logger/releases/tag/1.0.0) | Lua logger for ZMQ with FFI and CZMQ |
+| [api-gateway-request-tracking](https://github.com/adobe-apiplatform/api-gateway-request-tracking) | [1.0.1](https://github.com/adobe-apiplatform/api-gateway-request-tracking/releases/tag/1.0.1) | Usage and Tracking Handler for the API Gateway |
 
 ##### Other Lua Modules
 
