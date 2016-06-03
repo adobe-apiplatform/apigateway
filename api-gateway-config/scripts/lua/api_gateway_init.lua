@@ -44,8 +44,32 @@ local function loadrequire(module)
     return require(module)
 end
 
+--- Initializes the `zmqLogger` used by `trackingRulesLogger.lua` from api-gateway-request-tracking module
+-- @param parentObject
+--
+local function initZMQLogger(parentObject)
+    ngx.log(ngx.DEBUG, "Initializing ZMQLogger on property [zmqLogger]")
+    -- when the ZmqModule is not present the script does not break
+    local ZmqLogger = loadrequire("api-gateway.zmq.ZeroMQLogger")
+
+    if (ZmqLogger == nil) then
+        return
+    end
+
+    local zmq_publish_address = "ipc:///tmp/nginx_queue_listen"
+    ngx.log(ngx.INFO, "Starting new ZmqLogger on pid [", tostring(ngx.worker.pid()), "] on address [", zmq_publish_address, "]")
+    local zmqLogger = ZmqLogger:new()
+    zmqLogger:connect(ZmqLogger.SOCKET_TYPE.ZMQ_PUB, zmq_publish_address)
+
+    parentObject.zmqLogger = zmqLogger
+end
+
 local function initValidationFactory(parentObject)
     parentObject.validation = require "api-gateway.validation.factory"
+end
+
+local function initTrackingFactory(parentObject)
+    parentObject.tracking = require "api-gateway.tracking.factory"
 end
 
 local function initMetricsFactory(parentObject)
@@ -53,6 +77,8 @@ local function initMetricsFactory(parentObject)
 end
 
 initValidationFactory(_M)
+initZMQLogger(_M)
+initTrackingFactory(_M)
 initMetricsFactory(_M)
 -- TODO: test health-check with the new version of Openresty
 -- initRedisHealthCheck()
