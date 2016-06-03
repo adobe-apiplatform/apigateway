@@ -22,6 +22,8 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
          && cd /tmp/ \
          && tar -xf /tmp/zeromq.tar.gz \
          && cd /tmp/zeromq*/ \
+         && apk add automake autoconf \
+         && ./autogen.sh \
          && ./configure --prefix=/usr \
                         --sysconfdir=/etc \
                         --mandir=/usr/share/man \
@@ -31,11 +33,13 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
          && cd /tmp/ \
          && tar -xf /tmp/czmq.tar.gz \
          && cd /tmp/czmq*/ \
+         && ./autogen.sh \
          && ./configure --prefix=/usr \
                         --sysconfdir=/etc \
                         --mandir=/usr/share/man \
                         --infodir=/usr/share/info \
          && make && make install \
+         && apk del automake autoconf \
          && rm -rf /tmp/zeromq* && rm -rf /tmp/czmq* \
          && rm -rf /var/cache/apk/*
 
