@@ -18,7 +18,7 @@ ENV CZMQ_VERSION 2.2.0
 
 # Installing throttling dependencies
 RUN echo " ... adding throttling support with ZMQ and CZMQ" \
-         && curl -L http://download.zeromq.org/zeromq-${ZMQ_VERSION}.tar.gz -o /tmp/zeromq.tar.gz \
+         && curl -L https://github.com/zeromq/zeromq4-x/archive/v${ZMQ_VERSION}.tar.gz -o /tmp/zeromq.tar.gz \
          && cd /tmp/ \
          && tar -xf /tmp/zeromq.tar.gz \
          && cd /tmp/zeromq*/ \
@@ -27,7 +27,7 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
                         --mandir=/usr/share/man \
                         --infodir=/usr/share/info \
          && make && make install \
-         && curl -L http://download.zeromq.org/czmq-${CZMQ_VERSION}.tar.gz -o /tmp/czmq.tar.gz \
+         && curl -L https://github.com/zeromq/czmq/archive/v${CZMQ_VERSION}.tar.gz -o /tmp/czmq.tar.gz \
          && cd /tmp/ \
          && tar -xf /tmp/czmq.tar.gz \
          && cd /tmp/czmq*/ \
