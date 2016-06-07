@@ -259,7 +259,7 @@ RUN echo " ... installing api-gateway-cachemanager..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV AWS_VERSION 1.7.0
+ENV AWS_VERSION 1.7.1
 RUN echo " ... installing api-gateway-aws ..." \
     && apk update \
     && apk add make \
