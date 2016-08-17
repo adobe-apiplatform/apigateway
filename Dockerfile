@@ -190,7 +190,7 @@ ENV PATH   $PATH:/usr/lib/go/bin
 RUN echo " ... installing api-gateway-config-supervisor  ... " \
     && echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk update \
-    && apk add make git go \
+    && apk add gcc make git go \
     && mkdir -p /tmp/api-gateway \
     && curl -k -L https://github.com/adobe-apiplatform/api-gateway-config-supervisor/archive/${CONFIG_SUPERVISOR_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
     && cd /tmp/api-gateway \
