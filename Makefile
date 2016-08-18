@@ -10,7 +10,7 @@ docker-ssh:
 
 .PHONY: docker-run
 docker-run:
-	docker run --rm --name="apigateway" -p 80:80 -p 5000:5000 adobeapiplatform/apigateway:latest ${DOCKER_ARGS}
+	docker run --rm --name="apigateway" -p 80:80 -p 5000:5000 -v /git/apigateway/api-gateway-config/:/etc/api-gateway adobeapiplatform/apigateway:latest ${DOCKER_ARGS}
 
 .PHONY: docker-debug
 docker-debug:

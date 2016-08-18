@@ -4,6 +4,8 @@ gateway:
     - redis:redis.docker
   volumes:
     - ~/tmp/apiplatform/apigateway/api-gateway-config/:/etc/api-gateway
+  expose:
+    - "5000"
   ports:
   - "80:80"
   environment:

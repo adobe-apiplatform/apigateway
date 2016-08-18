@@ -72,6 +72,21 @@ local function initTrackingFactory(parentObject)
     parentObject.tracking = require "api-gateway.tracking.factory"
 end
 
+local function initTracingFactory(parentObject)
+
+    local function get_logger(name)
+        ngx.log(ngx.ERR, "get_logger " )
+
+        return {
+            logMetrics = function (self, key, value)
+                ngx.log(ngx.ERR, "Received " .. tostring(value))
+            end
+        }
+    end
+
+    parentObject.getAsyncLogger = get_logger
+end
+
 local function initMetricsFactory(parentObject)
     parentObject.metrics = require "metrics.factory"
 end
@@ -79,6 +94,7 @@ end
 initValidationFactory(_M)
 initZMQLogger(_M)
 initTrackingFactory(_M)
+initTracingFactory(_M)
 initMetricsFactory(_M)
 -- TODO: test health-check with the new version of Openresty
 -- initRedisHealthCheck()
