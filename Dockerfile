@@ -190,7 +190,7 @@ ENV PATH   $PATH:/usr/lib/go/bin
 RUN echo " ... installing api-gateway-config-supervisor  ... " \
     && echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk update \
-    && apk add make git go \
+    && apk add make git go gcc \
     && mkdir -p /tmp/api-gateway \
     && curl -k -L https://github.com/adobe-apiplatform/api-gateway-config-supervisor/archive/${CONFIG_SUPERVISOR_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
     && cd /tmp/api-gateway \
@@ -216,7 +216,7 @@ RUN echo " ... installing api-gateway-config-supervisor  ... " \
     && rm -rf /tmp/go-src \
     && rm -rf /usr/lib/go/bin/pkg/ \
     && rm -rf /usr/lib/go/bin/godep \
-    && apk del make git go \
+    && apk del make git go gcc \
     && rm -rf /var/cache/apk/*
 
 RUN echo " ... installing aws-cli ..." \
@@ -359,6 +359,7 @@ RUN \
     && rm -rf /var/cache/apk/*
 
 COPY init.sh /etc/init-container.sh
+COPY hacky_sync.sh /etc/hacky_sync.sh
 ONBUILD COPY init.sh /etc/init-container.sh
 
 # add the default configuration for the Gateway

@@ -28,6 +28,7 @@ sleep_duration=${MARATHON_POLL_INTERVAL:-5}
 # location for a remote /etc/api-gateway folder.
 # i.e s3://api-gateway-config
 remote_config=${REMOTE_CONFIG}
+remote_config_generated=${REMOTE_CONFIG_GENERATED}
 remote_config_sync_interval=${REMOTE_CONFIG_SYNC_INTERVAL:-10s}
 
 function start_zmq_adaptor()
@@ -72,10 +73,28 @@ sync_cmd="echo checking for changes ..."
 if [[ -n "${remote_config}" ]]; then
     echo "   ... using a remote config from: ${remote_config}"
     if [[ "${remote_config}" =~ ^s3://.+ ]]; then
-      sync_cmd="aws s3 sync --exclude *resolvers.conf --exclude *environment.conf.d/*vars.server.conf --exclude *environment.conf.d/*upstreams.http.conf --delete ${remote_config} /etc/api-gateway/"
+      sync_cmd="aws s3 sync --exclude *resolvers.conf --exclude *environment.conf.d/*vars.server.conf --exclude *environment.conf.d/*upstreams.http.conf --exclude *generated-conf.d/* --delete ${remote_config} /etc/api-gateway/"
       echo "   ... syncing from s3 using command ${sync_cmd}"
+    elif [[ "${remote_config}" =~ ^(file://|/).+ ]]; then
+#      sync_cmd="rclone sync -q --exclude *resolvers.conf --exclude *environment.conf.d/*vars.server.conf --exclude *environment.conf.d/*upstreams.http.conf --exclude *generated-conf.d/* ${remote_config#file://} /etc/api-gateway/"
+      sync_cmd="/etc/hacky_sync.sh ${remote_config#file://}"
+      echo "   ... syncing with rclone using command ${sync_cmd}"
     else
       echo "   ... but this REMOTE_CONFIG is not supported "
+    fi
+fi
+# override sync with generated, if specified
+if [[ -n "${remote_config_generated}" ]]; then
+    echo "   ... using remote generated config from: ${remote_config_generated}"
+    if [[ "${remote_config_generated}" =~ ^s3://.+ ]]; then
+      sync_cmd="aws s3 sync --delete ${remote_config_generated} /etc/api-gateway/generated-conf.d/"
+      echo "   ... syncing from s3 using command ${sync_cmd}"
+    elif [[ "${remote_config_generated}" =~ ^(file://|/).+ ]]; then
+#      sync_cmd="rclone sync -q ${remote_config_generated#file://} /etc/api-gateway/generated-conf.d/"
+      sync_cmd="/etc/hacky_sync.sh --gen ${remote_config_generated#file://}"
+      echo "   ... syncing with rclone using command ${sync_cmd}"
+    else
+      echo "   ... but this REMOTE_CONFIG_GENERATED is not supported "
     fi
 fi
 api-gateway-config-supervisor \
