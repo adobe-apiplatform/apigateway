@@ -105,7 +105,7 @@ What's inside
 | [Openresty](https://github.com/openresty/) | 1.9.7.3 | Installed in `/usr/local/sbin/api-gateway` |
 | [Openresty](https://github.com/openresty/) compiled `--with-debug` | 1.9.7.3 |  Installed in `/usr/local/sbin/api-gateway-debug` which enables [debugging log](http://nginx.org/en/docs/debugging_log.html) |
 | [Test Nginx](https://github.com/openresty/test-nginx) | [0.24](https://github.com/openresty/test-nginx/releases/tag/v0.24) | Useful for executing integration tests from the container. <br/> It's installed in `/usr/local/test-nginx-0.24/`. <br/> It's also used during Docker build to execute `make test` on lua modules.  |
-| [PCRE](https://sourceforge.net/projects/pcre/) | [8.37](https://sourceforge.net/projects/pcre/files/pcre/8.37/) | Enables PCRE JIT support | 
+| [PCRE](https://sourceforge.net/projects/pcre/) | | Enables PCRE JIT support | 
 | [NAXSI](https://github.com/nbs-system/naxsi) | [0.53-2](https://github.com/nbs-system/naxsi/releases/tag/0.53-2) |  NAXSI is an open-source, high performance, low rules maintenance WAF for NGINX |
 | [ZeroMQ](http://download.zeromq.org/) | [4.0.5](http://zeromq.org/area:download) |  ZeroMQ |
 | [CZMQ](http://download.zeromq.org/) | [2.2.0](http://czmq.zeromq.org/page:get-the-software) |  CZMQ - High-level C Binding for ZeroMQ |

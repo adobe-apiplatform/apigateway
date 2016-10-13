@@ -2,6 +2,7 @@ DOCKER_TAG ?= snapshot-`date +'%Y%m%d-%H%M'`
 DOCKER_REGISTRY ?= ''
 
 docker:
+	git submodule update --init --recursive
 	docker build -t adobeapiplatform/apigateway .
 
 .PHONY: docker-ssh
