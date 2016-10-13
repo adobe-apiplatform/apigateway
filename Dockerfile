@@ -6,6 +6,13 @@
 #
 FROM alpine:latest
 
+ENV OPENRESTY_VERSION=1.9.7.3 \
+    _prefix=/usr/local \
+    _exec_prefix=/usr/local \
+    _localstatedir=/var \
+    _sysconfdir=/etc \
+    _sbindir=/usr/local/sbin
+
 COPY submodules /tmp/api-gateway
 
 # install dependencies
@@ -21,27 +28,19 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
          && apk add automake autoconf \
          && ./autogen.sh \
          && ./configure --prefix=/usr \
-                        --sysconfdir=/etc \
+                        --sysconfdir=${_sysconfdir} \
                         --mandir=/usr/share/man \
                         --infodir=/usr/share/info \
          && make && make install \
          && cd /tmp/api-gateway/czmq/ \
          && ./autogen.sh \
          && ./configure --prefix=/usr \
-                        --sysconfdir=/etc \
+                        --sysconfdir=${_sysconfdir} \
                         --mandir=/usr/share/man \
                         --infodir=/usr/share/info \
          && make && make install \
          && apk del automake autoconf \
          && rm -rf /var/cache/apk/*
-
-# openresty build
-ENV OPENRESTY_VERSION=1.9.7.3 \
-    _prefix=/usr/local \
-    _exec_prefix=/usr/local \
-    _localstatedir=/var \
-    _sysconfdir=/etc \
-    _sbindir=/usr/local/sbin
 
 RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
      && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || echo 1) \
@@ -150,34 +149,23 @@ RUN echo " ... installing lua-resty-iputils..." \
     && $INSTALL -d ${LUA_LIB_DIR}/resty \
     && $INSTALL lib/resty/*.lua ${LUA_LIB_DIR}/resty/
 
-ENV GOPATH /usr/lib/go/bin
-ENV GOBIN  /usr/lib/go/bin
-ENV PATH   $PATH:/usr/lib/go/bin
 RUN echo " ... installing api-gateway-config-supervisor  ... " \
-    && echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk update \
     && apk add gcc make git 'go<1.7' \
-    && mkdir -p /tmp/go \
-    && mv /tmp/api-gateway/api-gateway-config-supervisor/* /tmp/go \
-    && cd /tmp/go \
+    && export GOPATH=/go PATH=$PATH:/go/bin \
+    && mkdir -p ${GOPATH}/src/github.com/adobe-apiplatform \
+    && ln -s /tmp/api-gateway/api-gateway-config-supervisor ${GOPATH}/src/github.com/adobe-apiplatform/ \
+    && cd ${GOPATH}/src/github.com/adobe-apiplatform/api-gateway-config-supervisor \
     && make setup \
-    && mkdir -p /tmp/go/Godeps/_workspace \
-    && ln -s /tmp/go/vendor /tmp/go/Godeps/_workspace/src \
-    && mkdir -p /tmp/go-src/src/github.com/adobe-apiplatform \
-    && ln -s /tmp/go /tmp/go-src/src/github.com/adobe-apiplatform/api-gateway-config-supervisor \
-    && GOPATH=/tmp/go/vendor:/tmp/go-src CGO_ENABLED=0 GOOS=linux /usr/lib/go/bin/godep  go build -ldflags "-s" -a -installsuffix cgo -o api-gateway-config-supervisor ./ \
-    && mv /tmp/go/api-gateway-config-supervisor /usr/local/sbin/ \
+    && godep go build -a -o api-gateway-config-supervisor ./ \
+    && mv api-gateway-config-supervisor ${_sbindir} \
 
     && echo "installing rclone sync ... " \
     && go get github.com/ncw/rclone \
-    && mv /usr/lib/go/bin/rclone /usr/local/sbin/ \
+    && mv ${GOPATH}/bin/rclone ${_sbindir}/ \
 
     && echo " cleaning up ... " \
-    && rm -rf /usr/lib/go/bin/src \
-    && rm -rf /tmp/go \
-    && rm -rf /tmp/go-src \
-    && rm -rf /usr/lib/go/bin/pkg/ \
-    && rm -rf /usr/lib/go/bin/godep \
+    && rm -rf ${GOPATH} \
     && apk del make git go gcc \
     && rm -rf /var/cache/apk/*
 
@@ -251,7 +239,7 @@ RUN echo " ... installing api-gateway-zmq-adaptor" \
          && apk add check-dev g++ gcc \
          && cd /tmp/api-gateway/api-gateway-zmq-adaptor \
          && make test \
-         && PREFIX=/usr/local/sbin make install \
+         && PREFIX=${_sbindir} make install \
          && apk del check-dev g++ gcc \
          && rm -rf /var/cache/apk/*
 
@@ -260,8 +248,8 @@ RUN echo " ... installing api-gateway-zmq-logger ..." \
         && cp -r /tmp/api-gateway/test-nginx/* ./test/resources/test-nginx/ \
         && make test \
         && make install \
-             LUA_LIB_DIR=/usr/local/api-gateway/lualib \
-             INSTALL=/usr/local/api-gateway/bin/resty-install
+             LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
+             INSTALL=${_prefix}/api-gateway/bin/resty-install
 
 RUN echo " ... installing api-gateway-request-tracking ..." \
         && cd /tmp/api-gateway/api-gateway-request-tracking \
@@ -269,26 +257,26 @@ RUN echo " ... installing api-gateway-request-tracking ..." \
         && apk update && apk add redis \
         && REDIS_SERVER=/usr/bin/redis-server make test \
         && make install \
-             LUA_LIB_DIR=/usr/local/api-gateway/lualib \
-             INSTALL=/usr/local/api-gateway/bin/resty-install \
+             LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
+             INSTALL=${_prefix}/api-gateway/bin/resty-install \
         && apk del redis
 
 RUN \
-    curl -L -k -s -o /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 \
+    curl -L -k -s -o ${_prefix}/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 \
+    && chmod 755 ${_prefix}/bin/jq \
     && apk update \
     && apk add gawk \
-    && chmod 755 /usr/local/bin/jq \
     && rm -rf /var/cache/apk/* /tmp/api-gateway
 
-COPY init.sh /etc/init-container.sh
-COPY hacky_sync.sh /etc/hacky_sync.sh
-ONBUILD COPY init.sh /etc/init-container.sh
+COPY init.sh ${_sysconfdir}/init-container.sh
+COPY hacky_sync.sh ${_sysconfdir}/hacky_sync.sh
+ONBUILD COPY init.sh ${_sysconfdir}/init-container.sh
 
 # add the default configuration for the Gateway
-COPY api-gateway-config /etc/api-gateway
+COPY api-gateway-config ${_sysconfdir}/api-gateway
 RUN adduser -S nginx-api-gateway \
     && addgroup -S nginx-api-gateway
-ONBUILD COPY api-gateway-config /etc/api-gateway
+ONBUILD COPY api-gateway-config ${_sysconfdir}/api-gateway
 
 
 ENTRYPOINT ["/etc/init-container.sh"]
