@@ -21,27 +21,30 @@
 # * DEALINGS IN THE SOFTWARE.
 # *
 # */
-debug_mode=${DEBUG}
-log_level=${LOG_LEVEL:-warn}
-marathon_host=${MARATHON_HOST}
-sleep_duration=${MARATHON_POLL_INTERVAL:-5}
-# location for a remote /etc/api-gateway folder.
-# i.e s3://api-gateway-config
-remote_config=${REMOTE_CONFIG}
-remote_config_generated=${REMOTE_CONFIG_GENERATED}
-remote_config_sync_interval=${REMOTE_CONFIG_SYNC_INTERVAL:-10s}
+
+# configurable environment variables
+[[ "${DEBUG}" == true ]] && set -vx || DEBUG=false
+: ${LOG_LEVEL:=warn}
+: ${ZMQ_PUBLISHER_PORT}
+: ${MARATHON_HOST}
+: ${MARATHON_POLL_INTERVAL:=5}
+# location for a local or remote /etc/api-gateway folder.
+# i.e file:///tmp/api-gateway-config s3://api-gateway-config
+: ${REMOTE_CONFIG}
+: ${REMOTE_CONFIG_GENERATED}
+: ${REMOTE_CONFIG_SYNC_INTERVAL:=10s}
+: ${API_GATEWAY_CONFIG_SUPERVISOR_EXTRA} # e.g. --debug
 
 function start_zmq_adaptor()
 {
     echo "Starting ZeroMQ adaptor ..."
-    zmq_port=$(echo $ZMQ_PUBLISHER_PORT)
     # use -d flag to start API Gateway ZMQ adaptor in debug mode to print all messages sent by the GW
     zmq_adaptor_cmd="api-gateway-zmq-adaptor"
-    if [[ -n "${zmq_port}" ]]; then
-        echo "... ZMQ will publish messages on:" ${zmq_port}
-        zmq_adaptor_cmd="${zmq_adaptor_cmd} -p ${zmq_port}"
+    if [[ -n "${ZMQ_PUBLISHER_PORT}" ]]; then
+        echo "... ZMQ will publish messages on:" ${ZMQ_PUBLISHER_PORT}
+        zmq_adaptor_cmd="${zmq_adaptor_cmd} -p ${ZMQ_PUBLISHER_PORT}"
     fi
-    if [ "${debug_mode}" == "true" ]; then
+    if [[ "${DEBUG}" == "true" ]]; then
         echo "   ...  in DEBUG mode "
         zmq_adaptor_cmd="${zmq_adaptor_cmd} -d"
     fi
@@ -53,11 +56,11 @@ function start_zmq_adaptor()
     chown nginx-api-gateway:nginx-api-gateway /tmp/nginx_queue_push
 }
 # keep the zmq adaptor running using a simple loop
-while true; do zmq_pid=$(ps aux | grep api-gateway-zmq-adaptor | grep -v grep) || ( echo "Restarting api-gateway-zmq-adaptor" && start_zmq_adaptor ); sleep 60; done &
+for ((;;)); do zmq_pid=$(ps aux | grep api-gateway-zmq-adaptor | grep -v grep) || ( echo "Restarting api-gateway-zmq-adaptor" && start_zmq_adaptor ); sleep 60; done &
 
 
 echo "Starting api-gateway ..."
-if [ "${debug_mode}" == "true" ]; then
+if [[ "${DEBUG}" == "true" ]]; then
     echo "   ...  in DEBUG mode "
     mv /usr/local/sbin/api-gateway /usr/local/sbin/api-gateway-no-debug
     ln -sf /usr/local/sbin/api-gateway-debug /usr/local/sbin/api-gateway
@@ -70,51 +73,49 @@ echo resolver $(awk 'BEGIN{ORS=" "} /nameserver/{print $2}' /etc/resolv.conf | s
 echo "   ...  with dns $(cat /etc/api-gateway/conf.d/includes/resolvers.conf)"
 
 sync_cmd="echo checking for changes ..."
-if [[ -n "${remote_config}" ]]; then
-    echo "   ... using a remote config from: ${remote_config}"
-    if [[ "${remote_config}" =~ ^s3://.+ ]]; then
-      sync_cmd="aws s3 sync --exclude *resolvers.conf --exclude *environment.conf.d/*vars.server.conf --exclude *environment.conf.d/*upstreams.http.conf --exclude *generated-conf.d/* --delete ${remote_config} /etc/api-gateway/"
-      echo "   ... syncing from s3 using command ${sync_cmd}"
-    elif [[ "${remote_config}" =~ ^(file://|/).+ ]]; then
-#      sync_cmd="rclone sync -q --exclude *resolvers.conf --exclude *environment.conf.d/*vars.server.conf --exclude *environment.conf.d/*upstreams.http.conf --exclude *generated-conf.d/* ${remote_config#file://} /etc/api-gateway/"
-      sync_cmd="/etc/hacky_sync.sh ${remote_config#file://}"
-      echo "   ... syncing with rclone using command ${sync_cmd}"
-    else
-      echo "   ... but this REMOTE_CONFIG is not supported "
-    fi
+if [[ -n "${REMOTE_CONFIG_GENERATED}" ]]; then
+    REMOTE_CONFIG=${REMOTE_CONFIG_GENERATED}
+    generated=' generated'
 fi
 # override sync with generated, if specified
-if [[ -n "${remote_config_generated}" ]]; then
-    echo "   ... using remote generated config from: ${remote_config_generated}"
-    if [[ "${remote_config_generated}" =~ ^s3://.+ ]]; then
-      sync_cmd="aws s3 sync --delete ${remote_config_generated} /etc/api-gateway/generated-conf.d/"
-      echo "   ... syncing from s3 using command ${sync_cmd}"
-    elif [[ "${remote_config_generated}" =~ ^(file://|/).+ ]]; then
-#      sync_cmd="rclone sync -q ${remote_config_generated#file://} /etc/api-gateway/generated-conf.d/"
-      sync_cmd="/etc/hacky_sync.sh --gen ${remote_config_generated#file://}"
-      echo "   ... syncing with rclone using command ${sync_cmd}"
-    else
-      echo "   ... but this REMOTE_CONFIG_GENERATED is not supported "
-    fi
+if [[ -n "${REMOTE_CONFIG}" ]]; then
+    excludes="--exclude *resolvers.conf --exclude *environment.conf.d/*vars.server.conf --exclude *environment.conf.d/*upstreams.http.conf --exclude *generated-conf.d/*"
+    echo "   ... using remote${generated} config from: ${REMOTE_CONFIG}"
+    case ${REMOTE_CONFIG} in
+      s3://*)
+	sync_cmd="aws s3 sync $excludes --delete ${REMOTE_CONFIG} /etc/api-gateway/${generated:+generated-conf.d/}"
+        echo "   ... syncing from s3 using command ${sync_cmd}"
+	;;
+      file:///*)
+	REMOTE_CONFIG=${REMOTE_CONFIG:7}
+	;& # fallthru
+      /*)
+	sync_cmd="rclone -q sync $excludes ${REMOTE_CONFIG} /etc/api-gateway/${generated:+generated-conf.d/}"
+	echo "   ... syncing with rclone using command ${sync_cmd}"
+	;;
+      *)
+	echo "   ... but this REMOTE_CONFIG${generated:+_GENERATED} is not supported "
+    esac
 fi
 api-gateway-config-supervisor \
+        ${API_GATEWAY_CONFIG_SUPERVISOR_EXTRA} \
         --reload-cmd="api-gateway -s reload" \
         --sync-folder=/etc/api-gateway \
-        --sync-interval=${remote_config_sync_interval} \
+        --sync-interval=${REMOTE_CONFIG_SYNC_INTERVAL} \
         --sync-cmd="${sync_cmd}" \
         --http-addr=127.0.0.1:8888 &
 
-if [[ -n "${marathon_host}" ]]; then
-    echo "  ... starting Marathon Service Discovery on ${marathon_host}"
+if [[ -n "${MARATHON_HOST}" ]]; then
+    echo "  ... starting Marathon Service Discovery on ${MARATHON_HOST}"
     touch /var/run/apigateway-config-watcher.lastrun
     # start marathon's service discovery
-    while true; do /etc/api-gateway/marathon-service-discovery.sh > /dev/stderr; sleep ${sleep_duration}; done &
+    for ((;;)); do /etc/api-gateway/marathon-service-discovery.sh > /dev/stderr; sleep ${MARATHON_POLL_INTERVAL}; done &
     # start simple statsd logger
     #
     # ASSUMPTION: there is a graphite app named "api-gateway-graphite" deployed in marathon
     #
-    while true; do \
-        statsd_host=$(curl -s ${marathon_host}/v2/apps/api-gateway-graphite/tasks -H "Accept:text/plain" | grep 8125 | awk '{for(i=3;i<=NF;++i) printf("%s ", $i) }' | awk '{for(i=1;i<=NF;++i) sub(/:[[:digit:]]+/,"",$i); print }' ); \
+    for ((;;)); do \
+        statsd_host=$(curl -s ${MARATHON_HOST}/v2/apps/api-gateway-graphite/tasks -H "Accept:text/plain" | grep 8125 | awk '{for(i=3;i<=NF;++i) printf("%s ", $i) }' | awk '{for(i=1;i<=NF;++i) sub(/:[[:digit:]]+/,"",$i); print }' ); \
         if [[ -n "${statsd_host}" ]]; then python /etc/api-gateway/scripts/python/logger/StatsdLogger.py --statsd-host=${statsd_host} > /var/log/api-gateway/statsd-logger.log; fi; \
         sleep 6; \
     done &
@@ -123,5 +124,5 @@ fi
 echo "   ... testing configuration "
 api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf
 
-echo "   ... using log level: '${log_level}'. Override it with -e 'LOG_LEVEL=<level>' "
-api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level};"
+echo "   ... using log level: '${LOG_LEVEL}'. Override it with -e 'LOG_LEVEL=<level>' "
+api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${LOG_LEVEL};"

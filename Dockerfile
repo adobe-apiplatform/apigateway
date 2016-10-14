@@ -232,7 +232,6 @@ RUN apk update \
     && addgroup -S nginx-api-gateway
 
 COPY init.sh ${_sysconfdir}/init-container.sh
-COPY hacky_sync.sh ${_sysconfdir}/hacky_sync.sh
 ONBUILD COPY init.sh ${_sysconfdir}/init-container.sh
 
 # add the default configuration for the Gateway
