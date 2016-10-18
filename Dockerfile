@@ -45,7 +45,6 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
 
 # openresty build
 ENV OPENRESTY_VERSION=1.9.7.3 \
-    NAXSI_VERSION=0.53-2 \
     PCRE_VERSION=8.37 \
     TEST_NGINX_VERSION=0.24 \
     _prefix=/usr/local \
@@ -54,19 +53,17 @@ ENV OPENRESTY_VERSION=1.9.7.3 \
     _sysconfdir=/etc \
     _sbindir=/usr/local/sbin
 
-RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
+RUN  echo " ... adding Openresty, NGINX, and PCRE" \
      && mkdir -p /tmp/api-gateway \
      && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
      && echo "using up to $NPROC threads" \
 
      && cd /tmp/api-gateway/ \
-     && curl -k -L https://github.com/nbs-system/naxsi/archive/${NAXSI_VERSION}.tar.gz -o /tmp/api-gateway/naxsi-${NAXSI_VERSION}.tar.gz \
      && curl -k -L http://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
      && curl -k -L https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -zxf ./openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -zxf ./pcre-${PCRE_VERSION}.tar.gz \
-     && tar -zxf ./naxsi-${NAXSI_VERSION}.tar.gz \
-     && cd /tmp/api-gateway/openresty-${OPENRESTY_VERSION} \ 
+     && cd /tmp/api-gateway/openresty-${OPENRESTY_VERSION} \
 
      && echo "        - building debugging version of the api-gateway ... " \
      && ./configure \
@@ -77,7 +74,6 @@ RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
             --http-log-path=${_localstatedir}/log/api-gateway/access.log \
             --pid-path=${_localstatedir}/run/api-gateway.pid \
             --lock-path=${_localstatedir}/run/api-gateway.lock \
-            --add-module=../naxsi-${NAXSI_VERSION}/naxsi_src/ \
             --with-pcre=../pcre-${PCRE_VERSION}/ --with-pcre-jit \
             --with-stream \
             --with-stream_ssl_module \
@@ -115,7 +111,6 @@ RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
             --http-log-path=${_localstatedir}/log/api-gateway/access.log \
             --pid-path=${_localstatedir}/run/api-gateway.pid \
             --lock-path=${_localstatedir}/run/api-gateway.lock \
-            --add-module=../naxsi-${NAXSI_VERSION}/naxsi_src/ \
             --with-pcre=../pcre-${PCRE_VERSION}/ --with-pcre-jit \
             --with-stream \
             --with-stream_ssl_module \
