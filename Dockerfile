@@ -270,7 +270,7 @@ RUN echo " ... installing api-gateway-aws ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV REQUEST_VALIDATION_VERSION 1.1.1
+ENV REQUEST_VALIDATION_VERSION 1.2.0
 RUN echo " ... installing api-gateway-request-validation ..." \
     && apk update \
     && apk add make \
