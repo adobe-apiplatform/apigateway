@@ -11,7 +11,7 @@ RUN apk update \
     && apk add gcc tar libtool zlib jemalloc jemalloc-dev perl \ 
     make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
     perl-test-longstring perl-list-moreutils perl-http-message \
-    geoip-dev
+    geoip-dev sudo
 
 ENV ZMQ_VERSION 4.0.5
 ENV CZMQ_VERSION 2.2.0
@@ -41,10 +41,11 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
          && make && make install \
          && apk del automake autoconf \
          && rm -rf /tmp/zeromq* && rm -rf /tmp/czmq* \
-         && rm -rf /var/cache/apk/*
+         && rm -rf /var/cache/apk/* 
 
 # openresty build
 ENV OPENRESTY_VERSION=1.9.7.3 \
+    NAXSI_VERSION=0.53-2 \
     PCRE_VERSION=8.37 \
     TEST_NGINX_VERSION=0.24 \
     _prefix=/usr/local \
@@ -53,17 +54,19 @@ ENV OPENRESTY_VERSION=1.9.7.3 \
     _sysconfdir=/etc \
     _sbindir=/usr/local/sbin
 
-RUN  echo " ... adding Openresty, NGINX, and PCRE" \
+RUN  echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
      && mkdir -p /tmp/api-gateway \
      && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
      && echo "using up to $NPROC threads" \
 
      && cd /tmp/api-gateway/ \
+     && curl -k -L https://github.com/nbs-system/naxsi/archive/${NAXSI_VERSION}.tar.gz -o /tmp/api-gateway/naxsi-${NAXSI_VERSION}.tar.gz \
      && curl -k -L http://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
      && curl -k -L https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -zxf ./openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -zxf ./pcre-${PCRE_VERSION}.tar.gz \
-     && cd /tmp/api-gateway/openresty-${OPENRESTY_VERSION} \
+     && tar -zxf ./naxsi-${NAXSI_VERSION}.tar.gz \
+     && cd /tmp/api-gateway/openresty-${OPENRESTY_VERSION} \ 
 
      && echo "        - building debugging version of the api-gateway ... " \
      && ./configure \
@@ -74,6 +77,7 @@ RUN  echo " ... adding Openresty, NGINX, and PCRE" \
             --http-log-path=${_localstatedir}/log/api-gateway/access.log \
             --pid-path=${_localstatedir}/run/api-gateway.pid \
             --lock-path=${_localstatedir}/run/api-gateway.lock \
+            --add-module=../naxsi-${NAXSI_VERSION}/naxsi_src/ \
             --with-pcre=../pcre-${PCRE_VERSION}/ --with-pcre-jit \
             --with-stream \
             --with-stream_ssl_module \
@@ -111,6 +115,7 @@ RUN  echo " ... adding Openresty, NGINX, and PCRE" \
             --http-log-path=${_localstatedir}/log/api-gateway/access.log \
             --pid-path=${_localstatedir}/run/api-gateway.pid \
             --lock-path=${_localstatedir}/run/api-gateway.lock \
+            --add-module=../naxsi-${NAXSI_VERSION}/naxsi_src/ \
             --with-pcre=../pcre-${PCRE_VERSION}/ --with-pcre-jit \
             --with-stream \
             --with-stream_ssl_module \
@@ -270,7 +275,7 @@ RUN echo " ... installing api-gateway-aws ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV REQUEST_VALIDATION_VERSION 1.2.0
+ENV REQUEST_VALIDATION_VERSION 1.1.1
 RUN echo " ... installing api-gateway-request-validation ..." \
     && apk update \
     && apk add make \
@@ -304,7 +309,7 @@ RUN echo " ... installing api-gateway-async-logger ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV ZMQ_ADAPTOR_VERSION 0.2.1
+ENV ZMQ_ADAPTOR_VERSION 0.1.1
 RUN echo " ... installing api-gateway-zmq-adaptor" \
          && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
          && apk update \
@@ -353,14 +358,27 @@ RUN \
     && chmod 755 /usr/local/bin/jq \
     && rm -rf /var/cache/apk/*
 
+RUN addgroup apiplatform && \
+   adduser -D -G apiplatform apiplatform 
+
 COPY init.sh /etc/init-container.sh
 ONBUILD COPY init.sh /etc/init-container.sh
 
 # add the default configuration for the Gateway
 COPY api-gateway-config /etc/api-gateway
 RUN adduser -S nginx-api-gateway \
-    && addgroup -S nginx-api-gateway
+    && adduser nginx-api-gateway apiplatform \
+    && addgroup -S nginx-api-gateway \
+    && mkdir -p /usr/local/api-gateway \
+    && chown -R apiplatform:apiplatform /etc/api-gateway /var/log/api-gateway /usr/local \
+    && chown root.apiplatform /var/run \
+    && chmod 775 /var/run \
+    && chmod 775 -R /etc/api-gateway \
+    && chmod 4755 /bin/busybox \
+    && echo "apiplatform ALL=(ALL) NOPASSWD: /bin/chown" >> /etc/sudoers
+
 ONBUILD COPY api-gateway-config /etc/api-gateway
 
+USER apiplatform
 
 ENTRYPOINT ["/etc/init-container.sh"]
