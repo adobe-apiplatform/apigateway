@@ -49,7 +49,6 @@ function start_zmq_adaptor()
     sleep 3s
     # allow interprocess communication by allowing api-gateway processes to write to the socket
     sudo /bin/chown nginx-api-gateway:nginx-api-gateway /tmp/nginx_queue_listen
-    sudo /bin/chown nginx-api-gateway:nginx-api-gateway /tmp/nginx_queue_push
 }
 # keep the zmq adaptor running using a simple loop
 while true; do zmq_pid=$(ps aux | grep api-gateway-zmq-adaptor | grep -v grep) || ( echo "Restarting api-gateway-zmq-adaptor" && start_zmq_adaptor ); sleep 60; done &
