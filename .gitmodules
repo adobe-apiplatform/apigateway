@@ -1,0 +1,56 @@
+[submodule "submodules/zeromq4-x"]
+	path = submodules/zeromq4-x
+	url = https://github.com/zeromq/zeromq4-x
+	branch = v4.0.5
+[submodule "submodules/czmq"]
+	path = submodules/czmq
+	url = https://github.com/zeromq/czmq
+	branch = v2.2.0
+[submodule "submodules/test-nginx"]
+	path = submodules/test-nginx
+	url = https://github.com/openresty/test-nginx
+	branch = v0.24
+[submodule "submodules/lua-resty-http"]
+	path = submodules/lua-resty-http
+	url = https://github.com/pintsized/lua-resty-http
+	branch = v0.07
+[submodule "submodules/lua-resty-iputils"]
+	path = submodules/lua-resty-iputils
+	url = https://github.com/hamishforbes/lua-resty-iputils
+	branch = v0.2.0
+[submodule "submodules/api-gateway-config-supervisor"]
+	path = submodules/api-gateway-config-supervisor
+	url = https://github.com/adobe-apiplatform/api-gateway-config-supervisor
+	branch = 1.0.1
+[submodule "submodules/api-gateway-hmac"]
+	path = submodules/api-gateway-hmac
+	url = https://github.com/adobe-apiplatform/api-gateway-hmac
+	branch = 1.0.0
+[submodule "submodules/api-gateway-cachemanager"]
+	path = submodules/api-gateway-cachemanager
+	url = https://github.com/adobe-apiplatform/api-gateway-cachemanager
+	branch = 1.0.1
+[submodule "submodules/api-gateway-aws"]
+	path = submodules/api-gateway-aws
+	url = https://github.com/adobe-apiplatform/api-gateway-aws
+	branch = 1.7.1
+[submodule "submodules/api-gateway-request-validation"]
+	path = submodules/api-gateway-request-validation
+	url = https://github.com/adobe-apiplatform/api-gateway-request-validation
+	branch = 1.2.0
+[submodule "submodules/api-gateway-async-logger"]
+	path = submodules/api-gateway-async-logger
+	url = https://github.com/adobe-apiplatform/api-gateway-async-logger
+	branch = 1.0.1
+[submodule "submodules/api-gateway-zmq-adaptor"]
+	path = submodules/api-gateway-zmq-adaptor
+	url = https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor
+	branch = 0.2.1
+[submodule "submodules/api-gateway-zmq-logger"]
+	path = submodules/api-gateway-zmq-logger
+	url = https://github.com/adobe-apiplatform/api-gateway-zmq-logger
+	branch = 1.0.0
+[submodule "submodules/api-gateway-request-tracking"]
+	path = submodules/api-gateway-request-tracking
+	url = https://github.com/adobe-apiplatform/api-gateway-request-tracking
+	branch = 1.0.1
