@@ -47,7 +47,7 @@ RUN apk update \
                         --infodir=/usr/share/info \
          && make -j${NPROC} && make install \
 
-&&   echo " ... adding Openresty, NGINX, NAXSI and PCRE" \
+&&   echo " ... adding Openresty, NGINX and PCRE" \
      && OPENRESTY_VERSION=1.9.7.3 \
      && echo "using up to $NPROC threads" \
 
@@ -63,7 +63,6 @@ RUN apk update \
             --http-log-path=${_localstatedir}/log/api-gateway/access.log \
             --pid-path=${_localstatedir}/run/api-gateway.pid \
             --lock-path=${_localstatedir}/run/api-gateway.lock \
-            --add-module=../naxsi/naxsi_src/ \
             --with-pcre --with-pcre-jit \
             --with-stream \
             --with-stream_ssl_module \
@@ -101,7 +100,6 @@ RUN apk update \
             --http-log-path=${_localstatedir}/log/api-gateway/access.log \
             --pid-path=${_localstatedir}/run/api-gateway.pid \
             --lock-path=${_localstatedir}/run/api-gateway.lock \
-            --add-module=../naxsi/naxsi_src/ \
             --with-pcre --with-pcre-jit \
             --with-stream \
             --with-stream_ssl_module \
