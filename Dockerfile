@@ -11,7 +11,7 @@ RUN apk update \
     && apk add gcc tar libtool zlib jemalloc jemalloc-dev perl \ 
     make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
     perl-test-longstring perl-list-moreutils perl-http-message \
-    geoip-dev sudo
+    geoip-dev sudo iptables
 
 ENV ZMQ_VERSION 4.0.5
 ENV CZMQ_VERSION 2.2.0
@@ -356,27 +356,21 @@ RUN \
 COPY init.sh /etc/init-container.sh
 ONBUILD COPY init.sh /etc/init-container.sh
 
-RUN addgroup apiplatform && \
-   adduser -D -G apiplatform apiplatform
-
 #add the default configuration for the Gateway
 COPY api-gateway-config /etc/api-gateway
-RUN adduser -S nginx-api-gateway \
-    && adduser nginx-api-gateway apiplatform \
-    && addgroup -S nginx-api-gateway \
-    && mkdir -p /usr/local/api-gateway \
-    && chown nginx-api-gateway:nginx-api-gateway /usr/local/api-gateway \
-    && chown -R apiplatform:apiplatform /etc/api-gateway /var/log/api-gateway /usr/local \
-    && chown root.apiplatform /var/run \
-    && chmod 775 /var/run \
-    && chown root.apiplatform /tmp \
-    && chmod 775 -R /etc/api-gateway \
+
+RUN adduser -S nginx-api-gateway -u 1000 \
+    && addgroup -S nginx-api-gateway -g 1000
+
+RUN mkdir -p /usr/local/api-gateway \
+    && chown -R nginx-api-gateway /etc/api-gateway /var/log/api-gateway /usr/local \
+    && chmod 755 -R /etc/api-gateway /var/log/api-gateway /usr/local \
     && chmod 4755 /bin/busybox \
-    && echo "apiplatform ALL=(ALL) NOPASSWD: /bin/chown" >> /etc/sudoers
+    && echo "nginx-api-gateway ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # add the default configuration for the Gateway
 ONBUILD COPY api-gateway-config /etc/api-gateway
 
-USER apiplatform
+USER nginx-api-gateway
 
 ENTRYPOINT ["/etc/init-container.sh"]
