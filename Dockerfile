@@ -11,7 +11,7 @@ RUN apk update \
     && apk add gcc tar libtool zlib jemalloc jemalloc-dev perl \ 
     make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
     perl-test-longstring perl-list-moreutils perl-http-message \
-    geoip-dev sudo iptables
+    geoip-dev sudo
 
 ENV ZMQ_VERSION 4.0.5
 ENV CZMQ_VERSION 2.2.0
