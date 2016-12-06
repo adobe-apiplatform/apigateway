@@ -45,10 +45,10 @@ function start_zmq_adaptor()
         zmq_adaptor_cmd="${zmq_adaptor_cmd} -d"
     fi
 
-    $zmq_adaptor_cmd >> /dev/stderr &
+    sudo $zmq_adaptor_cmd >> /dev/stderr &
     sleep 3s
     # allow interprocess communication by allowing api-gateway processes to write to the socket
-    chown nginx-api-gateway:nginx-api-gateway /tmp/nginx_queue_listen
+    sudo /bin/chown nginx-api-gateway:nginx-api-gateway /tmp/nginx_queue_listen
 }
 # keep the zmq adaptor running using a simple loop
 while true; do zmq_pid=$(ps aux | grep api-gateway-zmq-adaptor | grep -v grep) || ( echo "Restarting api-gateway-zmq-adaptor" && start_zmq_adaptor ); sleep 60; done &
@@ -61,7 +61,7 @@ if [ "${debug_mode}" == "true" ]; then
     ln -sf /usr/local/sbin/api-gateway-debug /usr/local/sbin/api-gateway
 fi
 
-/usr/local/sbin/api-gateway -V
+sudo /usr/local/sbin/api-gateway -V
 echo "------"
 
 echo resolver $(awk 'BEGIN{ORS=" "} /nameserver/{print $2}' /etc/resolv.conf | sed "s/ $/;/g") > /etc/api-gateway/conf.d/includes/resolvers.conf
@@ -77,7 +77,7 @@ if [[ -n "${remote_config}" ]]; then
       echo "   ... but this REMOTE_CONFIG is not supported "
     fi
 fi
-api-gateway-config-supervisor \
+sudo api-gateway-config-supervisor \
         --reload-cmd="api-gateway -s reload" \
         --sync-folder=/etc/api-gateway \
         --sync-interval=${remote_config_sync_interval} \
@@ -101,7 +101,7 @@ if [[ -n "${marathon_host}" ]]; then
 fi
 
 echo "   ... testing configuration "
-api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf
+sudo api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf
 
 echo "   ... using log level: '${log_level}'. Override it with -e 'LOG_LEVEL=<level>' "
-api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level};"
+sudo api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level};"
