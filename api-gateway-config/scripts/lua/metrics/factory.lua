@@ -24,7 +24,7 @@
 -- User: ddascal
 --
 
-local MetricsCollector = require "metrics.MetricsCollector"
+local MetricsCollector = require (ngx.var.custom_metrics_collector_path) or "metrics.MetricsCollector"
 local collector = MetricsCollector:new()
 
 local function _captureUsageData()
