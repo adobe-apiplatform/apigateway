@@ -270,7 +270,7 @@ RUN echo " ... installing api-gateway-aws ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV REQUEST_VALIDATION_VERSION 1.2.0
+ENV REQUEST_VALIDATION_VERSION 1.2.4
 RUN echo " ... installing api-gateway-request-validation ..." \
     && apk update \
     && apk add make \
@@ -354,7 +354,6 @@ RUN \
     && rm -rf /var/cache/apk/*
 
 COPY init.sh /etc/init-container.sh
-ONBUILD COPY init.sh /etc/init-container.sh
 
 #add the default configuration for the Gateway
 COPY api-gateway-config /etc/api-gateway
@@ -369,7 +368,6 @@ RUN mkdir -p /usr/local/api-gateway \
     && echo "nginx-api-gateway ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # add the default configuration for the Gateway
-ONBUILD COPY api-gateway-config /etc/api-gateway
 
 USER nginx-api-gateway
 
