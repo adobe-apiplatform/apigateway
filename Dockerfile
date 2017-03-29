@@ -3,13 +3,13 @@
 # VERSION               1.9.7.3
 #
 # From https://hub.docker.com/_/alpine/
-#
-FROM alpine:latest
+# alpine:3.4 if go <1.7
+FROM alpine:3.4
 
 # install dependencies
 RUN apk update \
     && apk add gcc tar libtool zlib jemalloc jemalloc-dev perl \ 
-    make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
+    make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python autoconf automake\
     perl-test-longstring perl-list-moreutils perl-http-message \
     geoip-dev sudo
 
@@ -22,7 +22,6 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
          && cd /tmp/ \
          && tar -xf /tmp/zeromq.tar.gz \
          && cd /tmp/zeromq*/ \
-         && apk add automake autoconf \
          && ./autogen.sh \
          && ./configure --prefix=/usr \
                         --sysconfdir=/etc \
@@ -38,10 +37,7 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
                         --sysconfdir=/etc \
                         --mandir=/usr/share/man \
                         --infodir=/usr/share/info \
-         && make && make install \
-         && apk del automake autoconf \
-         && rm -rf /tmp/zeromq* && rm -rf /tmp/czmq* \
-         && rm -rf /var/cache/apk/*
+         && make && make install
 
 # openresty build
 ENV OPENRESTY_VERSION=1.9.7.3 \
