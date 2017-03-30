@@ -37,7 +37,7 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
                         --sysconfdir=/etc \
                         --mandir=/usr/share/man \
                         --infodir=/usr/share/info \
-         && make && make install
+         && make && make install && make clean
 
 # openresty build
 ENV OPENRESTY_VERSION=1.9.7.3 \
