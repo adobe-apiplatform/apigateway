@@ -3,8 +3,8 @@
 # VERSION               1.9.7.3
 #
 # From https://hub.docker.com/_/alpine/
-#
-FROM alpine:latest
+# alpine:3.4 if go <1.7
+FROM alpine:3.4
 
 # install dependencies
 RUN apk update \
@@ -18,11 +18,11 @@ ENV CZMQ_VERSION 2.2.0
 
 # Installing throttling dependencies
 RUN echo " ... adding throttling support with ZMQ and CZMQ" \
+         && apk add autoconf automake \
          && curl -L https://github.com/zeromq/zeromq4-x/archive/v${ZMQ_VERSION}.tar.gz -o /tmp/zeromq.tar.gz \
          && cd /tmp/ \
          && tar -xf /tmp/zeromq.tar.gz \
          && cd /tmp/zeromq*/ \
-         && apk add automake autoconf \
          && ./autogen.sh \
          && ./configure --prefix=/usr \
                         --sysconfdir=/etc \
