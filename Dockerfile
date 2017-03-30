@@ -9,7 +9,7 @@ FROM alpine:3.4
 # install dependencies
 RUN apk update \
     && apk add gcc tar libtool zlib jemalloc jemalloc-dev perl \ 
-    make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python autoconf automake\
+    make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
     perl-test-longstring perl-list-moreutils perl-http-message \
     geoip-dev sudo
 
@@ -18,6 +18,7 @@ ENV CZMQ_VERSION 2.2.0
 
 # Installing throttling dependencies
 RUN echo " ... adding throttling support with ZMQ and CZMQ" \
+         && apk add autoconf automake \
          && curl -L https://github.com/zeromq/zeromq4-x/archive/v${ZMQ_VERSION}.tar.gz -o /tmp/zeromq.tar.gz \
          && cd /tmp/ \
          && tar -xf /tmp/zeromq.tar.gz \
