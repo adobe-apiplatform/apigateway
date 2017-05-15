@@ -221,6 +221,9 @@ RUN echo " ... installing aws-cli ..." \
     && pip install --upgrade pip \
     && pip install awscli
 
+
+
+-----> other docker
 ENV HMAC_LUA_VERSION 1.0.0
 RUN echo " ... installing api-gateway-hmac ..." \
     && apk update \
@@ -236,6 +239,7 @@ RUN echo " ... installing api-gateway-hmac ..." \
             INSTALL=${_prefix}/api-gateway/bin/resty-install \
     && rm -rf /tmp/api-gateway
 
+----> other docker
 ENV CACHE_MANAGER_VERSION 1.0.1
 RUN echo " ... installing api-gateway-cachemanager..." \
     && apk update \
@@ -254,6 +258,8 @@ RUN echo " ... installing api-gateway-cachemanager..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
+
+---> other docker
 ENV AWS_VERSION 1.7.1
 RUN echo " ... installing api-gateway-aws ..." \
     && apk update \
@@ -270,6 +276,8 @@ RUN echo " ... installing api-gateway-aws ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
+
+----> other docker
 ENV REQUEST_VALIDATION_VERSION 1.2.4
 RUN echo " ... installing api-gateway-request-validation ..." \
     && apk update \
@@ -288,6 +296,8 @@ RUN echo " ... installing api-gateway-request-validation ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
+
+---> other docker
 ENV ASYNC_LOGGER_VERSION 1.0.1
 RUN echo " ... installing api-gateway-async-logger ..." \
     && apk update \
@@ -304,6 +314,8 @@ RUN echo " ... installing api-gateway-async-logger ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
+
+----> other docker
 ENV ZMQ_ADAPTOR_VERSION 0.2.1
 RUN echo " ... installing api-gateway-zmq-adaptor" \
          && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
@@ -318,6 +330,8 @@ RUN echo " ... installing api-gateway-zmq-adaptor" \
          && apk del check-dev g++ gcc \
          && rm -rf /var/cache/apk/*
 
+
+-----> other docker
 ENV ZMQ_LOGGER_VERSION 1.0.0
 RUN echo " ... installing api-gateway-zmq-logger ..." \
         && mkdir -p /tmp/api-gateway \
@@ -331,6 +345,8 @@ RUN echo " ... installing api-gateway-zmq-logger ..." \
              INSTALL=/usr/local/api-gateway/bin/resty-install \
         && rm -rf /tmp/api-gateway
 
+
+-----> other docker
 ENV REQUEST_TRACKING_VERSION 1.0.1
 RUN echo " ... installing api-gateway-request-tracking ..." \
         && mkdir -p /tmp/api-gateway \

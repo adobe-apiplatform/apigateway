@@ -26,7 +26,6 @@
 
 local _M = {}
 
-
 --- Loads a lua gracefully. If the module doesn't exist the exception is caught, logged and the execution continues
 -- @param module path to the module to be loaded
 --
