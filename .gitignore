@@ -1,4 +1,3 @@
 api-gateway-config/target
 api-gateway-config/target/*
-api-gateway-config/conf.d/includes/resolvers.conf
 *.iml
