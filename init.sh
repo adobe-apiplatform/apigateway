@@ -30,6 +30,9 @@ sleep_duration=${MARATHON_POLL_INTERVAL:-5}
 remote_config=${REMOTE_CONFIG}
 remote_config_sync_interval=${REMOTE_CONFIG_SYNC_INTERVAL:-10s}
 
+echo 'export REDIS_PASSWORD=${REDIS_PASSWORD}' >> ~/.bashrc
+echo ${REDIS_PASSWORD}
+
 function start_zmq_adaptor()
 {
     echo "Starting ZeroMQ adaptor ..."
