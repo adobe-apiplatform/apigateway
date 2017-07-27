@@ -30,9 +30,9 @@ sleep_duration=${MARATHON_POLL_INTERVAL:-5}
 remote_config=${REMOTE_CONFIG}
 remote_config_sync_interval=${REMOTE_CONFIG_SYNC_INTERVAL:-10s}
 
-mv /etc/profile /etc/profile_bk
-echo 'export REDIS_PASSWORD=$REDIS_PASSWORD' > /etc/profile
-cat /etc/profile_bk >> /etc/profile
+sudo mv /etc/profile /etc/profile_bk
+sudo echo 'export REDIS_PASSWORD=$REDIS_PASSWORD' > /etc/profile
+sudo cat /etc/profile_bk >> /etc/profile
 echo $REDIS_PASSWORD
 
 function start_zmq_adaptor()
