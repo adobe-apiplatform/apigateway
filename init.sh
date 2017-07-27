@@ -30,11 +30,6 @@ sleep_duration=${MARATHON_POLL_INTERVAL:-5}
 remote_config=${REMOTE_CONFIG}
 remote_config_sync_interval=${REMOTE_CONFIG_SYNC_INTERVAL:-10s}
 
-sudo mv /etc/profile /etc/profile_bk
-sudo echo 'export REDIS_PASSWORD=$REDIS_PASSWORD' > /etc/profile
-sudo cat /etc/profile_bk >> /etc/profile
-echo $REDIS_PASSWORD
-
 function start_zmq_adaptor()
 {
     echo "Starting ZeroMQ adaptor ..."
@@ -66,7 +61,7 @@ if [ "${debug_mode}" == "true" ]; then
     ln -sf /usr/local/sbin/api-gateway-debug /usr/local/sbin/api-gateway
 fi
 
-sudo /usr/local/sbin/api-gateway -V
+/usr/local/sbin/api-gateway -V
 echo "------"
 
 echo resolver $(awk 'BEGIN{ORS=" "} /nameserver/{print $2}' /etc/resolv.conf | sed "s/ $/;/g") > /etc/api-gateway/conf.d/includes/resolvers.conf
@@ -82,7 +77,7 @@ if [[ -n "${remote_config}" ]]; then
       echo "   ... but this REMOTE_CONFIG is not supported "
     fi
 fi
-sudo api-gateway-config-supervisor \
+api-gateway-config-supervisor \
         --reload-cmd="api-gateway -s reload" \
         --sync-folder=/etc/api-gateway \
         --sync-interval=${remote_config_sync_interval} \
@@ -106,7 +101,7 @@ if [[ -n "${marathon_host}" ]]; then
 fi
 
 echo "   ... testing configuration "
-sudo api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf
+api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf
 
 echo "   ... using log level: '${log_level}'. Override it with -e 'LOG_LEVEL=<level>' "
-sudo api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level};"
+api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level};"
