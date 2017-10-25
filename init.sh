@@ -55,6 +55,20 @@ while true; do zmq_pid=$(ps aux | grep api-gateway-zmq-adaptor | grep -v grep) |
 
 
 echo "Starting api-gateway ..."
+
+was_empty="false"
+
+while ! [ "$(ls -A /etc/api-gateway/generated-conf.d)" ]; do
+    echo "Waiting for generated-conf.d to have files before starting"
+    sleep 5
+    was_empty="true"
+done
+
+if [ $was_empty == "true" ]; then
+    echo "Waiting to finish the copy before starting"
+    sleep 60
+fi
+
 if [ "${debug_mode}" == "true" ]; then
     echo "   ...  in DEBUG mode "
     mv /usr/local/sbin/api-gateway /usr/local/sbin/api-gateway-no-debug
