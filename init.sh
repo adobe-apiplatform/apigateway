@@ -91,12 +91,20 @@ if [[ -n "${remote_config}" ]]; then
       echo "   ... but this REMOTE_CONFIG is not supported "
     fi
 fi
+
+api-gateway-config-supervisor \
+        --reload-cmd="api-gateway -s reload" \
+        --sync-folder=/usr/local/api-gateway/lualib \
+        --sync-interval=${remote_config_sync_interval} \
+        --sync-cmd="${sync_cmd}" \
+        --http-addr=127.0.0.1:8888 &
+
 api-gateway-config-supervisor \
         --reload-cmd="api-gateway -s reload" \
         --sync-folder=/etc/api-gateway \
         --sync-interval=${remote_config_sync_interval} \
         --sync-cmd="${sync_cmd}" \
-        --http-addr=127.0.0.1:8888 &
+        --http-addr=127.0.0.1:8989 &
 
 if [[ -n "${marathon_host}" ]]; then
     echo "  ... starting Marathon Service Discovery on ${marathon_host}"
