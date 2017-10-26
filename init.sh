@@ -46,7 +46,7 @@ function start_zmq_adaptor()
     fi
 
     sudo $zmq_adaptor_cmd >> /dev/stderr &
-    sleep 3s
+    sleep 10s
     # allow interprocess communication by allowing api-gateway processes to write to the socket
     sudo /bin/chown nginx-api-gateway:nginx-api-gateway /tmp/nginx_queue_listen
 }
@@ -66,7 +66,7 @@ done
 
 if [ $was_empty == "true" ]; then
     echo "Waiting to finish the copy before starting"
-    sleep 60
+    sleep 10
 fi
 
 if [ "${debug_mode}" == "true" ]; then
