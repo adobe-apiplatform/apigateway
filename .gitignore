@@ -1,3 +1,4 @@
 api-gateway-config/target
 api-gateway-config/target/*
 *.iml
+.idea/
