@@ -46,7 +46,7 @@ function start_zmq_adaptor()
     fi
 
     sudo $zmq_adaptor_cmd >> /dev/stderr &
-    sleep 3s
+    sleep 10s
     # allow interprocess communication by allowing api-gateway processes to write to the socket
     sudo /bin/chown nginx-api-gateway:nginx-api-gateway /tmp/nginx_queue_listen
 }
@@ -55,13 +55,27 @@ while true; do zmq_pid=$(ps aux | grep api-gateway-zmq-adaptor | grep -v grep) |
 
 
 echo "Starting api-gateway ..."
+
+was_empty="false"
+
+while ! [ "$(ls -A /etc/api-gateway/generated-conf.d)" ]; do
+    echo "Waiting for generated-conf.d to have files before starting"
+    sleep 5
+    was_empty="true"
+done
+
+if [ $was_empty == "true" ]; then
+    echo "Waiting to finish the copy before starting"
+    sleep 10
+fi
+
 if [ "${debug_mode}" == "true" ]; then
     echo "   ...  in DEBUG mode "
     mv /usr/local/sbin/api-gateway /usr/local/sbin/api-gateway-no-debug
     ln -sf /usr/local/sbin/api-gateway-debug /usr/local/sbin/api-gateway
 fi
 
-sudo /usr/local/sbin/api-gateway -V
+/usr/local/sbin/api-gateway -V
 echo "------"
 
 echo resolver $(awk 'BEGIN{ORS=" "} /nameserver/{print $2}' /etc/resolv.conf | sed "s/ $/;/g") > /etc/api-gateway/conf.d/includes/resolvers.conf
@@ -77,12 +91,20 @@ if [[ -n "${remote_config}" ]]; then
       echo "   ... but this REMOTE_CONFIG is not supported "
     fi
 fi
-sudo api-gateway-config-supervisor \
+
+api-gateway-config-supervisor \
+        --reload-cmd="api-gateway -s reload" \
+        --sync-folder=/usr/local/api-gateway/lualib \
+        --sync-interval=${remote_config_sync_interval} \
+        --sync-cmd="${sync_cmd}" \
+        --http-addr=127.0.0.1:8888 &
+
+api-gateway-config-supervisor \
         --reload-cmd="api-gateway -s reload" \
         --sync-folder=/etc/api-gateway \
         --sync-interval=${remote_config_sync_interval} \
         --sync-cmd="${sync_cmd}" \
-        --http-addr=127.0.0.1:8888 &
+        --http-addr=127.0.0.1:8989 &
 
 if [[ -n "${marathon_host}" ]]; then
     echo "  ... starting Marathon Service Discovery on ${marathon_host}"
@@ -101,7 +123,7 @@ if [[ -n "${marathon_host}" ]]; then
 fi
 
 echo "   ... testing configuration "
-sudo api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf
+api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf
 
 echo "   ... using log level: '${log_level}'. Override it with -e 'LOG_LEVEL=<level>' "
-sudo api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level};"
+api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level};"
