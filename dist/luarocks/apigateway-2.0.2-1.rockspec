@@ -7,7 +7,7 @@ local packagePrefix = "api-gateway."
 local function make_plat(plat)
     return {
         modules = {
-            [packagePrefix .. ""] = fsPrefix .. "api_gateway_init.lua",
+            ["api_gateway_init.init"] = fsPrefix .. "api_gateway_init.lua",
             [packagePrefix .. "metrics.factory"] = fsPrefix .. "metrics/factory.lua",
             [packagePrefix .. "metrics.MetricsBuffer"] = fsPrefix .. "metrics/MetricsBuffer.lua",
             [packagePrefix .. "metrics.MetricsCollector"] = fsPrefix .. "metrics/MetricsCollector.lua"
