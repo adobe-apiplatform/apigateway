@@ -45,10 +45,10 @@ function start_zmq_adaptor()
         zmq_adaptor_cmd="${zmq_adaptor_cmd} -d"
     fi
 
-    sudo $zmq_adaptor_cmd >> /dev/stderr &
+    $zmq_adaptor_cmd >> /dev/stderr &
     sleep 10s
     # allow interprocess communication by allowing api-gateway processes to write to the socket
-    sudo /bin/chown nginx-api-gateway:nginx-api-gateway /tmp/nginx_queue_listen
+    /bin/chown nginx-api-gateway:nginx-api-gateway /tmp/nginx_queue_listen
 }
 # keep the zmq adaptor running using a simple loop
 while true; do zmq_pid=$(ps aux | grep api-gateway-zmq-adaptor | grep -v grep) || ( echo "Restarting api-gateway-zmq-adaptor" && start_zmq_adaptor ); sleep 60; done &
