@@ -59,8 +59,8 @@ RUN  echo " ... adding Openresty, NGINX, and PCRE" \
      && echo "using up to $NPROC threads" \
 
      && cd /tmp/api-gateway/ \
-     && curl -k -L http://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
-     && curl -k -L https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
+     && curl -L http://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
+     && curl -L https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -zxf ./openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -zxf ./pcre-${PCRE_VERSION}.tar.gz \
      && cd /tmp/api-gateway/openresty-${OPENRESTY_VERSION} \
@@ -138,7 +138,7 @@ RUN  echo " ... adding Openresty, NGINX, and PCRE" \
     && make install \
 
     && echo "        - adding Nginx Test support" \
-    && curl -k -L https://github.com/openresty/test-nginx/archive/v${TEST_NGINX_VERSION}.tar.gz -o ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
+    && curl -L https://github.com/openresty/test-nginx/archive/v${TEST_NGINX_VERSION}.tar.gz -o ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
     && cd ${_prefix} \
     && tar -xf ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
     && rm ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
@@ -155,7 +155,7 @@ RUN echo " ... installing lua-resty-http..." \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -k -L https://github.com/pintsized/lua-resty-http/archive/v${LUA_RESTY_HTTP_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz \
+    && curl -L https://github.com/pintsized/lua-resty-http/archive/v${LUA_RESTY_HTTP_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz \
     && tar -xf /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION} \
     && make install \
@@ -168,7 +168,7 @@ RUN echo " ... installing lua-resty-iputils..." \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -k -L https://github.com/hamishforbes/lua-resty-iputils/archive/v${LUA_RESTY_IPUTILS_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz \
+    && curl -L https://github.com/hamishforbes/lua-resty-iputils/archive/v${LUA_RESTY_IPUTILS_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz \
     && tar -xf /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION} \
     && export LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
@@ -186,7 +186,7 @@ RUN echo " ... installing api-gateway-config-supervisor  ... " \
     && apk update \
     && apk add gcc make git 'go<1.7' \
     && mkdir -p /tmp/api-gateway \
-    && curl -k -L https://github.com/adobe-apiplatform/api-gateway-config-supervisor/archive/${CONFIG_SUPERVISOR_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
+    && curl -L https://github.com/adobe-apiplatform/api-gateway-config-supervisor/archive/${CONFIG_SUPERVISOR_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
     && cd /tmp/api-gateway \
     && tar -xf /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
     && mkdir -p /tmp/go \
@@ -225,7 +225,7 @@ RUN echo " ... installing api-gateway-hmac ..." \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -k -L https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz \
+    && curl -L https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz \
     && tar -xf /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION} \
     && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
@@ -240,7 +240,7 @@ RUN echo " ... installing api-gateway-cachemanager..." \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -k -L https://github.com/adobe-apiplatform/api-gateway-cachemanager/archive/${CACHE_MANAGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz \
+    && curl -L https://github.com/adobe-apiplatform/api-gateway-cachemanager/archive/${CACHE_MANAGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz \
     && tar -xf /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION} \
     && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
@@ -258,7 +258,7 @@ RUN echo " ... installing api-gateway-aws ..." \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -k -L https://github.com/adobe-apiplatform/api-gateway-aws/archive/${AWS_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz \
+    && curl -L https://github.com/adobe-apiplatform/api-gateway-aws/archive/${AWS_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz \
     && tar -xf /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-aws-${AWS_VERSION} \
     && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
@@ -274,7 +274,7 @@ RUN echo " ... installing api-gateway-request-validation ..." \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -k -L https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
+    && curl -L https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
     && tar -xf /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION} \
     && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
@@ -292,7 +292,7 @@ RUN echo " ... installing api-gateway-async-logger ..." \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -k -L https://github.com/adobe-apiplatform/api-gateway-async-logger/archive/${ASYNC_LOGGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION}.tar.gz \
+    && curl -L https://github.com/adobe-apiplatform/api-gateway-async-logger/archive/${ASYNC_LOGGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION}.tar.gz \
     && tar -xf /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION} \
     && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
