@@ -50,28 +50,37 @@ info_log() {
         do_log "${_MSG}"
 }
 
-# 1. create the new upstream config
-# NOTE: for the moment when tasks expose multiple ports, only the first one is exposed through nginx
-curl -s ${marathon_host}/v2/tasks -H "Accept:text/plain" | awk 'NF>2' | grep -v :0 | awk '!seen[$1]++' | awk ' {s=""; for (f=3; f<=NF; f++) s = s  "\n server " $f " fail_timeout=10s;" ; print "upstream " $1 " {"  s  "\n keepalive 16;\n}" }'  > ${TMP_FILE}
-# 1.1. check redis upstreams
-#
-# ASSUMPTION:  there is a redis app named "api-gateway-redis" deployed in marathon and optionally another app named "api-gateway-redis-replica"
-#
-redis_master=$(cat ${TMP_FILE} | grep api-gateway-redis | wc -l)
-redis_replica=$(cat ${TMP_FILE} | grep api-gateway-redis-replica | wc -l)
-#      if api-gateway-redis upstream exists but api-gateway-redis-replica does not, then create the replica
-if [ ${redis_master} -gt 0 ] && [ ${redis_replica} -eq 0 ]; then
-    # clone api-gateway-redis block
-    sed -e '/api-gateway-redis/,/}/!d' ${TMP_FILE} | sed 's/-redis/-redis-replica/' >> ${TMP_FILE}
-fi
+# 0. Obtain list of current tasks from Marathon. If not available, skip reload
+existing_tasks=$(curl -s ${marathon_host}/v2/tasks -H "Accept:text/plain")
+found_existing_tasks=$?
+if [ ${found_existing_tasks} -eq 0 ]; then
+    # 1. create the new upstream config
+    # NOTE: for the moment when tasks expose multiple ports, only the first one is exposed through nginx
+    echo $existing_tasks | awk 'NF>2' | grep -v :0 | awk '!seen[$1]++' | awk ' {s=""; for (f=3; f<=NF; f++) s = s  "\n server " $f " fail_timeout=10s;" ; print "upstream " $1 " {"  s  "\n keepalive 16;\n}" }'  > ${TMP_FILE}
 
-if [ ${redis_master} -eq 0 ]; then
-    echo "upstream api-gateway-redis { server 127.0.0.1:6379; }" >> ${TMP_FILE}
-fi
+    # 1.1. check redis upstreams
+    #
+    # ASSUMPTION:  there is a redis app named "api-gateway-redis" deployed in marathon and optionally another app named "api-gateway-redis-replica"
+    #
+    redis_master=$(cat ${TMP_FILE} | grep api-gateway-redis | wc -l)
+    redis_replica=$(cat ${TMP_FILE} | grep api-gateway-redis-replica | wc -l)
+    #      if api-gateway-redis upstream exists but api-gateway-redis-replica does not, then create the replica
+    if [ ${redis_master} -gt 0 ] && [ ${redis_replica} -eq 0 ]; then
+        # clone api-gateway-redis block
+        sed -e '/api-gateway-redis/,/}/!d' ${TMP_FILE} | sed 's/-redis/-redis-replica/' >> ${TMP_FILE}
+    fi
 
-# 2 check for changes
-cmp -s ${TMP_FILE} ${UPSTREAM_FILE}
-changed_upstreams=$?
-if [[ \( ${changed_upstreams} -gt 0 \) ]]; then
-    cp ${TMP_FILE} ${UPSTREAM_FILE}
+    if [ ${redis_master} -eq 0 ]; then
+        echo "upstream api-gateway-redis { server 127.0.0.1:6379; }" >> ${TMP_FILE}
+    fi
+
+    # 2 check for changes
+    cmp -s ${TMP_FILE} ${UPSTREAM_FILE}
+    changed_upstreams=$?
+    if [[ \( ${changed_upstreams} -gt 0 \) ]]; then
+        info_log "Copying new upstreams config into place"
+        cp ${TMP_FILE} ${UPSTREAM_FILE}
+    fi
+else
+    fatal_error "Unable to find existing marathon tasks: curl error code '${found_existing_tasks}', skipping upstream reload"
 fi
