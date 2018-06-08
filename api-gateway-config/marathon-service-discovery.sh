@@ -39,9 +39,14 @@ do_log() {
         echo "`date +'%Y/%m/%d %H:%M:%S'` - marathon-service-discovery: ${_MSG}"
 }
 
-fatal_error() {
+error_log() {
         local _MSG=$1
         do_log "ERROR: ${_MSG}"
+}
+
+fatal_error() {
+        local _MSG=$1
+        error_log "${_MSG}"
         exit 255
 }
 
@@ -56,7 +61,7 @@ found_existing_tasks=$?
 if [ ${found_existing_tasks} -eq 0 ]; then
     # 1. create the new upstream config
     # NOTE: for the moment when tasks expose multiple ports, only the first one is exposed through nginx
-    echo $existing_tasks | awk 'NF>2' | grep -v :0 | awk '!seen[$1]++' | awk ' {s=""; for (f=3; f<=NF; f++) s = s  "\n server " $f " fail_timeout=10s;" ; print "upstream " $1 " {"  s  "\n keepalive 16;\n}" }'  > ${TMP_FILE}
+    echo "$existing_tasks" | awk 'NF>2' | grep -v :0 | awk '!seen[$1]++' | awk ' {s=""; for (f=3; f<=NF; f++) s = s  "\n server " $f " fail_timeout=10s;" ; print "upstream " $1 " {"  s  "\n keepalive 16;\n}" }'  > ${TMP_FILE}
 
     # 1.1. check redis upstreams
     #
@@ -82,5 +87,5 @@ if [ ${found_existing_tasks} -eq 0 ]; then
         cp ${TMP_FILE} ${UPSTREAM_FILE}
     fi
 else
-    fatal_error "Unable to find existing marathon tasks: curl error code '${found_existing_tasks}', skipping upstream reload"
+    error_log "Unable to find existing marathon tasks: curl error code '${found_existing_tasks}', skipping upstream reload"
 fi
