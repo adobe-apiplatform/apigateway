@@ -59,8 +59,8 @@ RUN  echo " ... adding Openresty, NGINX, and PCRE" \
      && echo "using up to $NPROC threads" \
 
      && cd /tmp/api-gateway/ \
-     && curl -L http://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
-     && curl -L https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
+     && curl -L https://s3.amazonaws.com/adobe-cloudops-apip-installers-ue1/3rd-party/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
+     && curl -L https://s3.amazonaws.com/adobe-cloudops-apip-installers-ue1/3rd-party/openresty-${OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -zxf ./openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -zxf ./pcre-${PCRE_VERSION}.tar.gz \
      && cd /tmp/api-gateway/openresty-${OPENRESTY_VERSION} \
