@@ -177,14 +177,14 @@ RUN echo " ... installing lua-resty-iputils..." \
     && $INSTALL lib/resty/*.lua ${LUA_LIB_DIR}/resty/ \
     && rm -rf /tmp/api-gateway
 
-ENV CONFIG_SUPERVISOR_VERSION 1.0.1-RC1
+ENV CONFIG_SUPERVISOR_VERSION 1.0.3
 ENV GOPATH /usr/lib/go/bin
 ENV GOBIN  /usr/lib/go/bin
 ENV PATH   $PATH:/usr/lib/go/bin
 RUN echo " ... installing api-gateway-config-supervisor  ... " \
     && echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk update \
-    && apk add gcc make git 'go<1.7' \
+    && apk add gcc make git 'go' \
     && mkdir -p /tmp/api-gateway \
     && curl -L https://github.com/adobe-apiplatform/api-gateway-config-supervisor/archive/${CONFIG_SUPERVISOR_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
     && cd /tmp/api-gateway \
