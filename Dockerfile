@@ -44,7 +44,7 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
          && rm -rf /var/cache/apk/*
 
 # openresty build
-ENV OPENRESTY_VERSION=1.13.6.1 \
+ENV OPENRESTY_VERSION=1.13.6.2 \
     PCRE_VERSION=8.37 \
     TEST_NGINX_VERSION=0.24 \
     _prefix=/usr/local \
