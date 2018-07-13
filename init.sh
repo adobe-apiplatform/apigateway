@@ -25,10 +25,20 @@ debug_mode=${DEBUG}
 log_level=${LOG_LEVEL:-warn}
 marathon_host=${MARATHON_HOST}
 sleep_duration=${MARATHON_POLL_INTERVAL:-5}
+#
 # location for a remote /etc/api-gateway folder.
 # i.e s3://api-gateway-config
+#
 remote_config=${REMOTE_CONFIG}
+#
+# How often to check for changes in configuration. Default: 10s
+#
 remote_config_sync_interval=${REMOTE_CONFIG_SYNC_INTERVAL:-10s}
+#
+# A custom sync command that overrides REMOTE_CONFIG var.
+# This allows full control over what the sync command does.
+#
+remote_config_sync_cmd=${REMOTE_CONFIG_SYNC_CMD}
 
 function start_zmq_adaptor()
 {
@@ -77,6 +87,13 @@ if [[ -n "${remote_config}" ]]; then
       echo "   ... but this REMOTE_CONFIG is not supported "
     fi
 fi
+
+if [[ -n "${remote_config_sync_cmd}" ]]; then
+    echo "   ... using REMOTE_CONFIG_SYNC_CMD: ${remote_config_sync_cmd}"
+    echo ${remote_config_sync_cmd} > /tmp/remote_config_sync_cmd.sh
+    sync_cmd="sh /tmp/remote_config_sync_cmd.sh"
+fi
+
 sudo api-gateway-config-supervisor \
         --reload-cmd="api-gateway -s reload" \
         --sync-folder=/etc/api-gateway \
