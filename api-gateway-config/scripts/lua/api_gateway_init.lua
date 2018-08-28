@@ -80,8 +80,7 @@ initValidationFactory(_M)
 initZMQLogger(_M)
 initTrackingFactory(_M)
 initMetricsFactory(_M)
--- TODO: test health-check with the new version of Openresty
--- initRedisHealthCheck()
 
 ngx.apiGateway = _M
+logger = require "api-gateway.util.logger"
 
