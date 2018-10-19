@@ -13,13 +13,13 @@ RUN apk update \
     perl-test-longstring perl-list-moreutils perl-http-message \
     geoip-dev sudo
 
-ENV ZMQ_VERSION=4.0.5 \
-    ZMQ_SHA256=e3dc99aeacd4e1e7a025f22f92afec6c381b82f0e29222d27e1256ada841e43f
-ENV CZMQ_VERSION=2.2.0 \
-    CZMQ_SHA256=3c95aab7434ac0a074a46217122c9f454c36befcd0b5aaa1f463aae0838dd499
+ENV ZMQ_VERSION 4.0.5
+ENV CZMQ_VERSION 2.2.0
 
 # Installing throttling dependencies
 RUN echo " ... adding throttling support with ZMQ and CZMQ" \
+         && ZMQ_SHA256=e3dc99aeacd4e1e7a025f22f92afec6c381b82f0e29222d27e1256ada841e43f \
+         && CZMQ_SHA256=3c95aab7434ac0a074a46217122c9f454c36befcd0b5aaa1f463aae0838dd499 \
          && apk add autoconf automake \
          && curl -sL https://github.com/zeromq/zeromq4-x/archive/v${ZMQ_VERSION}.tar.gz -o /tmp/zeromq.tar.gz \
          && echo "${ZMQ_SHA256}  /tmp/zeromq.tar.gz" | sha256sum -c - \
@@ -47,30 +47,29 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
          && rm -rf /tmp/zeromq* && rm -rf /tmp/czmq* \
          && rm -rf /var/cache/apk/*
 
-# openresty build
-ENV OPENRESTY_VERSION=1.13.6.1 \
-    OPENRESTY_SHA256=d1246e6cfa81098eea56fb88693e980d3e6b8752afae686fab271519b81d696b
-ENV PCRE_VERSION=8.37 \
-    PCRE_SHA256=19d490a714274a8c4c9d131f651489b8647cdb40a159e9fb7ce17ba99ef992ab
-ENV TEST_NGINX_VERSION=0.24 \
-    TEST_NGINX_SHA256=a98083e801a7a088231da1e3a5e0d3aab743f07ffc65ede48fe8a7de132db9b3
 ENV _prefix=/usr/local \
     _exec_prefix=/usr/local \
     _localstatedir=/var \
     _sysconfdir=/etc \
     _sbindir=/usr/local/sbin
 
-RUN  echo " ... adding Openresty, NGINX, and PCRE" \
-     && mkdir -p /tmp/api-gateway \
+# openresty build
+ENV OPENRESTY_VERSION 1.13.6.1
+ENV PCRE_VERSION 8.37
+RUN  echo " ... adding Openresty and PCRE" \
+     && OPENRESTY_SHA256=d1246e6cfa81098eea56fb88693e980d3e6b8752afae686fab271519b81d696b \
+     && PCRE_SHA256=19d490a714274a8c4c9d131f651489b8647cdb40a159e9fb7ce17ba99ef992ab \
      \
+     && mkdir -p /tmp/api-gateway \
      && cd /tmp/api-gateway/ \
      && curl -sL https://s3.amazonaws.com/adobe-cloudops-apip-installers-ue1/3rd-party/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
      && echo "${PCRE_SHA256}  /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz" | sha256sum -c - \
      && curl -sL https://s3.amazonaws.com/adobe-cloudops-apip-installers-ue1/3rd-party/openresty-${OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
      && echo "${OPENRESTY_SHA256}  /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz" | sha256sum -c - \
      && tar -zxf ./openresty-${OPENRESTY_VERSION}.tar.gz \
-     && tar -zxf ./pcre-${PCRE_VERSION}.tar.gz
-RUN readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
+     && tar -zxf ./pcre-${PCRE_VERSION}.tar.gz \
+     \
+     && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
      && echo "using up to $NPROC threads" \
      && cd /tmp/api-gateway/openresty-${OPENRESTY_VERSION} \
      && echo "        - building debugging version of the api-gateway ... " \
@@ -145,7 +144,9 @@ RUN readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
     && make -j${NPROC} \
     && make install
 
-RUN echo "        - adding Nginx Test support" \
+ENV TEST_NGINX_VERSION 0.24
+RUN echo " ... adding Nginx Test support..." \
+    && TEST_NGINX_SHA256=a98083e801a7a088231da1e3a5e0d3aab743f07ffc65ede48fe8a7de132db9b3 \
     && curl -sL https://github.com/openresty/test-nginx/archive/v${TEST_NGINX_VERSION}.tar.gz -o ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
     && echo "${TEST_NGINX_SHA256}  ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz" | sha256sum -c - \
     && cd ${_prefix} \
@@ -158,9 +159,9 @@ RUN echo "        - adding Nginx Test support" \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV LUA_RESTY_HTTP_VERSION=0.07 \
-    LUA_RESTY_HTTP_SHA256=1c6aa06c9955397c94e9c3e0c0fba4e2704e85bee77b4512fb54ae7c25d58d86
+ENV LUA_RESTY_HTTP_VERSION 0.07
 RUN echo " ... installing lua-resty-http..." \
+    && LUA_RESTY_HTTP_SHA256=1c6aa06c9955397c94e9c3e0c0fba4e2704e85bee77b4512fb54ae7c25d58d86 \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
@@ -173,9 +174,9 @@ RUN echo " ... installing lua-resty-http..." \
             INSTALL=${_prefix}/api-gateway/bin/resty-install \
     && rm -rf /tmp/api-gateway
 
-ENV LUA_RESTY_IPUTILS_VERSION=0.2.0 \
-    LUA_RESTY_IPUTILS_SHA256=7962557ff3070154a45c5192d927b26106ec2f411fd1a98eaf770bc23189799d
+ENV LUA_RESTY_IPUTILS_VERSION 0.2.0
 RUN echo " ... installing lua-resty-iputils..." \
+    && LUA_RESTY_IPUTILS_SHA256=7962557ff3070154a45c5192d927b26106ec2f411fd1a98eaf770bc23189799d \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
@@ -189,13 +190,12 @@ RUN echo " ... installing lua-resty-iputils..." \
     && $INSTALL lib/resty/*.lua ${LUA_LIB_DIR}/resty/ \
     && rm -rf /tmp/api-gateway
 
-ENV CONFIG_SUPERVISOR_VERSION=1.0.3 \
-    CONFIG_SUPERVISOR_SHA256=9a323d93897140f3ccb384a7279335d69f5659d1d29564b21f3d056f42272bdb
-
+ENV CONFIG_SUPERVISOR_VERSION 1.0.3
 ENV GOPATH /usr/lib/go/bin
 ENV GOBIN  /usr/lib/go/bin
 ENV PATH   $PATH:/usr/lib/go/bin
 RUN echo " ... installing api-gateway-config-supervisor  ... " \
+    && CONFIG_SUPERVISOR_SHA256=9a323d93897140f3ccb384a7279335d69f5659d1d29564b21f3d056f42272bdb \
     && echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk update \
     && apk add gcc make git 'go' \
@@ -214,11 +214,11 @@ RUN echo " ... installing api-gateway-config-supervisor  ... " \
     && ln -s /tmp/go /tmp/go-src/src/github.com/adobe-apiplatform/api-gateway-config-supervisor \
     && GOPATH=/tmp/go/vendor:/tmp/go-src CGO_ENABLED=0 GOOS=linux /usr/lib/go/bin/godep  go build -ldflags "-s" -a -installsuffix cgo -o api-gateway-config-supervisor ./ \
     && mv /tmp/go/api-gateway-config-supervisor /usr/local/sbin/ \
-
+    \
     && echo "installing rclone sync ... skipped due to https://github.com/ncw/rclone/issues/663 ... " \
     # && go get github.com/ncw/rclone \
     # && mv /usr/lib/go/bin/rclone /usr/local/sbin/ \
-
+    \
     && echo " cleaning up ... " \
     && rm -rf /usr/lib/go/bin/src \
     && rm -rf /tmp/go \
@@ -235,9 +235,9 @@ RUN echo " ... installing aws-cli ..." \
     && pip install --upgrade pip \
     && pip install awscli
 
-ENV HMAC_LUA_VERSION=1.0.0 \
-    HMAC_LUA_SHA256=53e6183cb3812418b55b9afba256f6d1f149cdd994c0c19df3bb70ac56310281
+ENV HMAC_LUA_VERSION 1.0.0
 RUN echo " ... installing api-gateway-hmac ..." \
+    && HMAC_LUA_SHA256=53e6183cb3812418b55b9afba256f6d1f149cdd994c0c19df3bb70ac56310281 \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
@@ -252,9 +252,9 @@ RUN echo " ... installing api-gateway-hmac ..." \
             INSTALL=${_prefix}/api-gateway/bin/resty-install \
     && rm -rf /tmp/api-gateway
 
-ENV CACHE_MANAGER_VERSION=1.0.1 \
-    CACHE_MANAGER_SHA256=8d03c1b4a9b3d6ca9fcbf941c42c5795d12fe2fd3d2e58b56e33888acb993f26
+ENV CACHE_MANAGER_VERSION 1.0.1
 RUN echo " ... installing api-gateway-cachemanager..." \
+    && CACHE_MANAGER_SHA256=8d03c1b4a9b3d6ca9fcbf941c42c5795d12fe2fd3d2e58b56e33888acb993f26 \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
@@ -272,9 +272,9 @@ RUN echo " ... installing api-gateway-cachemanager..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV AWS_VERSION=1.7.1 \
-    AWS_SHA256=d9fadd6602e2c139d389bd64329c72c129f76ad1d1c1857c2e4a3537d01e12fe
+ENV AWS_VERSION 1.7.1
 RUN echo " ... installing api-gateway-aws ..." \
+    && AWS_SHA256=d9fadd6602e2c139d389bd64329c72c129f76ad1d1c1857c2e4a3537d01e12fe \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
@@ -290,9 +290,9 @@ RUN echo " ... installing api-gateway-aws ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV REQUEST_VALIDATION_VERSION=1.2.4 \
-    REQUEST_VALIDATION_SHA256=44ebce6119b6d3e1405a1fc203d97c9cb64d4a37ee8e26e00a0eec2b5814e176
+ENV REQUEST_VALIDATION_VERSION 1.2.4
 RUN echo " ... installing api-gateway-request-validation ..." \
+    && REQUEST_VALIDATION_SHA256=44ebce6119b6d3e1405a1fc203d97c9cb64d4a37ee8e26e00a0eec2b5814e176 \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
@@ -310,9 +310,9 @@ RUN echo " ... installing api-gateway-request-validation ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV ASYNC_LOGGER_VERSION=1.0.1 \
-    ASYNC_LOGGER_SHA256=de5e008d189daa619a189a8bb530ed1c58c29f8bf07903b26b818dadd4bcc8fa
+ENV ASYNC_LOGGER_VERSION 1.0.1
 RUN echo " ... installing api-gateway-async-logger ..." \
+    && ASYNC_LOGGER_SHA256=de5e008d189daa619a189a8bb530ed1c58c29f8bf07903b26b818dadd4bcc8fa \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
@@ -328,9 +328,9 @@ RUN echo " ... installing api-gateway-async-logger ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV ZMQ_ADAPTOR_VERSION=0.2.1 \
-    ZMQ_ADAPTOR_SHA256=10cc0fd0b431931c8d05ab112e7e8e76aaf8848af5f3e48adf41d4bd0e329272
+ENV ZMQ_ADAPTOR_VERSION 0.2.1
 RUN echo " ... installing api-gateway-zmq-adaptor" \
+         && ZMQ_ADAPTOR_SHA256=10cc0fd0b431931c8d05ab112e7e8e76aaf8848af5f3e48adf41d4bd0e329272 \
          && curl -sL https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
          && echo "${ZMQ_ADAPTOR_SHA256}  /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION}" | sha256sum -c - \
          && apk update \
@@ -344,9 +344,9 @@ RUN echo " ... installing api-gateway-zmq-adaptor" \
          && apk del check-dev g++ gcc \
          && rm -rf /var/cache/apk/*
 
-ENV ZMQ_LOGGER_VERSION=1.0.0 \
-    ZMQ_LOGGER_SHA256=76afbe17397881719bf24775747276231841274976708cca8d3b37d6b95e61c8
+ENV ZMQ_LOGGER_VERSION 1.0.0
 RUN echo " ... installing api-gateway-zmq-logger ..." \
+        && ZMQ_LOGGER_SHA256=76afbe17397881719bf24775747276231841274976708cca8d3b37d6b95e61c8 \
         && mkdir -p /tmp/api-gateway \
         && curl -sL https://github.com/adobe-apiplatform/api-gateway-zmq-logger/archive/${ZMQ_LOGGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz \
         && echo "${ZMQ_LOGGER_SHA256}  /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz" | sha256sum -c - \
@@ -359,9 +359,9 @@ RUN echo " ... installing api-gateway-zmq-logger ..." \
              INSTALL=/usr/local/api-gateway/bin/resty-install \
         && rm -rf /tmp/api-gateway
 
-ENV REQUEST_TRACKING_VERSION=1.0.1 \
-    REQUEST_TRACKING_SHA256=6508d4eb444e0ae46bef262e0dd1def25f5762993e1810c21f1603ec57ce8895
+ENV REQUEST_TRACKING_VERSION 1.0.1
 RUN echo " ... installing api-gateway-request-tracking ..." \
+        && REQUEST_TRACKING_SHA256=6508d4eb444e0ae46bef262e0dd1def25f5762993e1810c21f1603ec57ce8895 \
         && mkdir -p /tmp/api-gateway \
         && curl -sL https://github.com/adobe-apiplatform/api-gateway-request-tracking/archive/${REQUEST_TRACKING_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION}.tar.gz \
         && echo "${REQUEST_TRACKING_SHA256}  /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION}.tar.gz" | sha256sum -c - \
@@ -376,9 +376,9 @@ RUN echo " ... installing api-gateway-request-tracking ..." \
         # && apk del redis \
         && rm -rf /tmp/api-gateway
 
-ENV JQ_VERSION=1.5 \
-    JQ_SHA256=c6b3a7d7d3e7b70c6f51b706a3b90bd01833846c54d32ca32f0027f00226ff6d
+ENV JQ_VERSION 1.5
 RUN curl -sL https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/jq-linux64 -o /usr/local/bin/jq \
+    && JQ_SHA256=c6b3a7d7d3e7b70c6f51b706a3b90bd01833846c54d32ca32f0027f00226ff6d \
     && echo "${JQ_SHA256}  /usr/local/bin/jq" | sha256sum -c - \
     && apk update \
     && apk add gawk \
