@@ -4,7 +4,7 @@
 #
 # From https://hub.docker.com/_/alpine/
 # alpine:3.4 if go <1.7
-FROM alpine:3.4
+FROM alpine:3.8
 
 # install dependencies
 RUN apk update \
