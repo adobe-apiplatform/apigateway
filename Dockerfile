@@ -223,7 +223,7 @@ RUN echo " ... installing aws-cli ..." \
 ENV HMAC_LUA_VERSION 1.0.0
 RUN echo " ... installing api-gateway-hmac ..." \
     && apk update \
-    && apk add make \
+    && apk add make perl-utils\
     && mkdir -p /tmp/api-gateway \
     && curl -L https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz \
     && tar -xf /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz -C /tmp/api-gateway/ \
@@ -303,7 +303,7 @@ RUN echo " ... installing api-gateway-async-logger ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV ZMQ_ADAPTOR_VERSION 0.2.1
+ENV ZMQ_ADAPTOR_VERSION 0235b04f39a480b5347411c278900e5c57874cf5
 RUN echo " ... installing api-gateway-zmq-adaptor" \
          && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
          && apk update \
