@@ -142,7 +142,12 @@ RUN  echo " ... adding Openresty and PCRE" \
             --without-http_scgi_module \
             -j${NPROC} \
     && make -j${NPROC} \
-    && make install
+    && make install \
+    && ln -s ${_sbindir}/api-gateway-debug ${_sbindir}/nginx \
+    && cp /tmp/api-gateway/openresty-${OPENRESTY_VERSION}/build/install ${_prefix}/api-gateway/bin/resty-install \
+    && apk del g++ gcc make \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/api-gateway
 
 ENV TEST_NGINX_VERSION 0.24
 RUN echo " ... adding Nginx Test support..." \
@@ -152,12 +157,7 @@ RUN echo " ... adding Nginx Test support..." \
     && cd ${_prefix} \
     && tar -xf ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
     && rm ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
-    && cp -r ${_prefix}/test-nginx-0.24/inc/* /usr/local/share/perl5/site_perl/ \
-    && ln -s ${_sbindir}/api-gateway-debug ${_sbindir}/nginx \
-    && cp /tmp/api-gateway/openresty-${OPENRESTY_VERSION}/build/install ${_prefix}/api-gateway/bin/resty-install \
-    && apk del g++ gcc make \
-    && rm -rf /var/cache/apk/* \
-    && rm -rf /tmp/api-gateway
+    && cp -r ${_prefix}/test-nginx-0.24/inc/* /usr/local/share/perl5/site_perl/
 
 ENV LUA_RESTY_HTTP_VERSION 0.07
 RUN echo " ... installing lua-resty-http..." \
