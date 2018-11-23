@@ -4,7 +4,7 @@
 #
 # From https://hub.docker.com/_/alpine/
 # alpine:3.4 if go <1.7
-FROM alpine:3.4
+FROM alpine:3.8
 
 # install dependencies
 RUN apk update \
@@ -235,7 +235,7 @@ ENV HMAC_LUA_VERSION 1.0.0
 RUN echo " ... installing api-gateway-hmac ..." \
     && HMAC_LUA_SHA256=53e6183cb3812418b55b9afba256f6d1f149cdd994c0c19df3bb70ac56310281 \
     && apk update \
-    && apk add make \
+    && apk add make perl-utils\
     && mkdir -p /tmp/api-gateway \
     && curl -sL https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz \
     && echo "${HMAC_LUA_SHA256}  /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz" | sha256sum -c - \
@@ -324,9 +324,9 @@ RUN echo " ... installing api-gateway-async-logger ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV ZMQ_ADAPTOR_VERSION 0.2.1
+ENV ZMQ_ADAPTOR_VERSION 0235b04f39a480b5347411c278900e5c57874cf5
 RUN echo " ... installing api-gateway-zmq-adaptor" \
-         && ZMQ_ADAPTOR_SHA256=10cc0fd0b431931c8d05ab112e7e8e76aaf8848af5f3e48adf41d4bd0e329272 \
+         && ZMQ_ADAPTOR_SHA256=d1aa7b70f5acfbf344508cdcac0d87401829b3073616dcf15dcfe337196ebcdc \
          && curl -sL https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
          && echo "${ZMQ_ADAPTOR_SHA256}  /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION}" | sha256sum -c - \
          && apk update \
