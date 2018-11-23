@@ -305,7 +305,9 @@ RUN echo " ... installing api-gateway-async-logger ..." \
 
 ENV ZMQ_ADAPTOR_VERSION 0235b04f39a480b5347411c278900e5c57874cf5
 RUN echo " ... installing api-gateway-zmq-adaptor" \
-         && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
+         && ZMQ_ADAPTOR_SHA256=d1aa7b70f5acfbf344508cdcac0d87401829b3073616dcf15dcfe337196ebcdc \
+         && curl -sL https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
+         && echo "${ZMQ_ADAPTOR_SHA256}  /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION}" | sha256sum -c - \
          && apk update \
          && apk add check-dev g++ gcc \
          && cd /tmp/ \
