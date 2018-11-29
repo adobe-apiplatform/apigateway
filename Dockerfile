@@ -149,15 +149,15 @@ RUN  echo " ... adding Openresty and PCRE" \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV TEST_NGINX_VERSION 0.24
+ENV TEST_NGINX_VERSION 0.26
 RUN echo " ... adding Nginx Test support..." \
-    && TEST_NGINX_SHA256=a98083e801a7a088231da1e3a5e0d3aab743f07ffc65ede48fe8a7de132db9b3 \
+    && TEST_NGINX_SHA256=c3ece8cac16be1934aa07861aa5cbd8c9df09caeeeba03781c520964c464d1ab \
     && curl -sL https://github.com/openresty/test-nginx/archive/v${TEST_NGINX_VERSION}.tar.gz -o ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
     && echo "${TEST_NGINX_SHA256}  ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz" | sha256sum -c - \
     && cd ${_prefix} \
     && tar -xf ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
     && rm ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
-    && cp -r ${_prefix}/test-nginx-0.24/inc/* /usr/local/share/perl5/site_perl/
+    && cp -r ${_prefix}/test-nginx-${TEST_NGINX_VERSION}/inc/* /usr/local/share/perl5/site_perl/
 
 ENV LUA_RESTY_HTTP_VERSION 0.07
 RUN echo " ... installing lua-resty-http..." \
