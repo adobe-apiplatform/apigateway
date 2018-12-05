@@ -4,7 +4,7 @@
 #
 # From https://hub.docker.com/_/alpine/
 # alpine:3.4 if go <1.7
-FROM alpine:3.4
+FROM alpine:3.8
 
 # install dependencies
 RUN apk update \
@@ -18,8 +18,11 @@ ENV CZMQ_VERSION 2.2.0
 
 # Installing throttling dependencies
 RUN echo " ... adding throttling support with ZMQ and CZMQ" \
+         && ZMQ_SHA256=e3dc99aeacd4e1e7a025f22f92afec6c381b82f0e29222d27e1256ada841e43f \
+         && CZMQ_SHA256=3c95aab7434ac0a074a46217122c9f454c36befcd0b5aaa1f463aae0838dd499 \
          && apk add autoconf automake \
-         && curl -L https://github.com/zeromq/zeromq4-x/archive/v${ZMQ_VERSION}.tar.gz -o /tmp/zeromq.tar.gz \
+         && curl -sL https://github.com/zeromq/zeromq4-x/archive/v${ZMQ_VERSION}.tar.gz -o /tmp/zeromq.tar.gz \
+         && echo "${ZMQ_SHA256}  /tmp/zeromq.tar.gz" | sha256sum -c - \
          && cd /tmp/ \
          && tar -xf /tmp/zeromq.tar.gz \
          && cd /tmp/zeromq*/ \
@@ -29,7 +32,8 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
                         --mandir=/usr/share/man \
                         --infodir=/usr/share/info \
          && make && make install \
-         && curl -L https://github.com/zeromq/czmq/archive/v${CZMQ_VERSION}.tar.gz -o /tmp/czmq.tar.gz \
+         && curl -sL https://github.com/zeromq/czmq/archive/v${CZMQ_VERSION}.tar.gz -o /tmp/czmq.tar.gz \
+         && echo "${CZMQ_SHA256}  /tmp/czmq.tar.gz" | sha256sum -c - \
          && cd /tmp/ \
          && tar -xf /tmp/czmq.tar.gz \
          && cd /tmp/czmq*/ \
@@ -43,31 +47,33 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
          && rm -rf /tmp/zeromq* && rm -rf /tmp/czmq* \
          && rm -rf /var/cache/apk/*
 
+ENV _prefix /usr/local
+
 # openresty build
-ENV OPENRESTY_VERSION=1.13.6.1 \
-    PCRE_VERSION=8.37 \
-    TEST_NGINX_VERSION=0.24 \
-    _prefix=/usr/local \
-    _exec_prefix=/usr/local \
-    _localstatedir=/var \
-    _sysconfdir=/etc \
-    _sbindir=/usr/local/sbin
-
-RUN  echo " ... adding Openresty, NGINX, and PCRE" \
+ENV OPENRESTY_VERSION 1.13.6.1
+ENV PCRE_VERSION 8.37
+RUN  echo " ... adding Openresty and PCRE" \
+     && _localstatedir=/var \
+     && _sysconfdir=/etc \
+     && _sbindir=/usr/local/sbin \
+     && OPENRESTY_SHA256=d1246e6cfa81098eea56fb88693e980d3e6b8752afae686fab271519b81d696b \
+     && PCRE_SHA256=19d490a714274a8c4c9d131f651489b8647cdb40a159e9fb7ce17ba99ef992ab \
+     \
      && mkdir -p /tmp/api-gateway \
-     && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
-     && echo "using up to $NPROC threads" \
-
      && cd /tmp/api-gateway/ \
-     && curl -L https://s3.amazonaws.com/adobe-cloudops-apip-installers-ue1/3rd-party/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
-     && curl -L https://s3.amazonaws.com/adobe-cloudops-apip-installers-ue1/3rd-party/openresty-${OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
+     && curl -sL https://s3.amazonaws.com/adobe-cloudops-apip-installers-ue1/3rd-party/pcre-${PCRE_VERSION}.tar.gz -o /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz \
+     && echo "${PCRE_SHA256}  /tmp/api-gateway/pcre-${PCRE_VERSION}.tar.gz" | sha256sum -c - \
+     && curl -sL https://s3.amazonaws.com/adobe-cloudops-apip-installers-ue1/3rd-party/openresty-${OPENRESTY_VERSION}.tar.gz -o /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz \
+     && echo "${OPENRESTY_SHA256}  /tmp/api-gateway/openresty-${OPENRESTY_VERSION}.tar.gz" | sha256sum -c - \
      && tar -zxf ./openresty-${OPENRESTY_VERSION}.tar.gz \
      && tar -zxf ./pcre-${PCRE_VERSION}.tar.gz \
+     \
+     && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
+     && echo "using up to $NPROC threads" \
      && cd /tmp/api-gateway/openresty-${OPENRESTY_VERSION} \
-
      && echo "        - building debugging version of the api-gateway ... " \
      && ./configure \
-            --prefix=${_exec_prefix}/api-gateway \
+            --prefix=${_prefix}/api-gateway \
             --sbin-path=${_sbindir}/api-gateway-debug \
             --conf-path=${_sysconfdir}/api-gateway/api-gateway.conf \
             --error-log-path=${_localstatedir}/log/api-gateway/error.log \
@@ -101,10 +107,10 @@ RUN  echo " ... adding Openresty, NGINX, and PCRE" \
             -j${NPROC} \
     && make -j${NPROC} \
     && make install \
-
+    \
     && echo "        - building regular version of the api-gateway ... " \
     && ./configure \
-            --prefix=${_exec_prefix}/api-gateway \
+            --prefix=${_prefix}/api-gateway \
             --sbin-path=${_sbindir}/api-gateway \
             --conf-path=${_sysconfdir}/api-gateway/api-gateway.conf \
             --error-log-path=${_localstatedir}/log/api-gateway/error.log \
@@ -136,26 +142,30 @@ RUN  echo " ... adding Openresty, NGINX, and PCRE" \
             -j${NPROC} \
     && make -j${NPROC} \
     && make install \
-
-    && echo "        - adding Nginx Test support" \
-    && curl -L https://github.com/openresty/test-nginx/archive/v${TEST_NGINX_VERSION}.tar.gz -o ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
-    && cd ${_prefix} \
-    && tar -xf ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
-    && rm ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
-    && cp -r ${_prefix}/test-nginx-0.24/inc/* /usr/local/share/perl5/site_perl/ \
-
     && ln -s ${_sbindir}/api-gateway-debug ${_sbindir}/nginx \
     && cp /tmp/api-gateway/openresty-${OPENRESTY_VERSION}/build/install ${_prefix}/api-gateway/bin/resty-install \
     && apk del g++ gcc make \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
+ENV TEST_NGINX_VERSION 0.24
+RUN echo " ... adding Nginx Test support..." \
+    && TEST_NGINX_SHA256=a98083e801a7a088231da1e3a5e0d3aab743f07ffc65ede48fe8a7de132db9b3 \
+    && curl -sL https://github.com/openresty/test-nginx/archive/v${TEST_NGINX_VERSION}.tar.gz -o ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
+    && echo "${TEST_NGINX_SHA256}  ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz" | sha256sum -c - \
+    && cd ${_prefix} \
+    && tar -xf ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
+    && rm ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
+    && cp -r ${_prefix}/test-nginx-${TEST_NGINX_VERSION}/inc/* /usr/local/share/perl5/site_perl/
+
 ENV LUA_RESTY_HTTP_VERSION 0.07
 RUN echo " ... installing lua-resty-http..." \
+    && LUA_RESTY_HTTP_SHA256=1c6aa06c9955397c94e9c3e0c0fba4e2704e85bee77b4512fb54ae7c25d58d86 \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -L https://github.com/pintsized/lua-resty-http/archive/v${LUA_RESTY_HTTP_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz \
+    && curl -sL https://github.com/pintsized/lua-resty-http/archive/v${LUA_RESTY_HTTP_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz \
+    && echo "${LUA_RESTY_HTTP_SHA256}  /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION} \
     && make install \
@@ -165,10 +175,12 @@ RUN echo " ... installing lua-resty-http..." \
 
 ENV LUA_RESTY_IPUTILS_VERSION 0.2.0
 RUN echo " ... installing lua-resty-iputils..." \
+    && LUA_RESTY_IPUTILS_SHA256=7962557ff3070154a45c5192d927b26106ec2f411fd1a98eaf770bc23189799d \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -L https://github.com/hamishforbes/lua-resty-iputils/archive/v${LUA_RESTY_IPUTILS_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz \
+    && curl -sL https://github.com/hamishforbes/lua-resty-iputils/archive/v${LUA_RESTY_IPUTILS_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz \
+    && echo "${LUA_RESTY_IPUTILS_SHA256}  /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION} \
     && export LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
@@ -178,32 +190,30 @@ RUN echo " ... installing lua-resty-iputils..." \
     && rm -rf /tmp/api-gateway
 
 ENV CONFIG_SUPERVISOR_VERSION 1.0.3
-ENV GOPATH /usr/lib/go/bin
+ENV GOPATH /tmp/go
 ENV GOBIN  /usr/lib/go/bin
 ENV PATH   $PATH:/usr/lib/go/bin
 RUN echo " ... installing api-gateway-config-supervisor  ... " \
+    && CONFIG_SUPERVISOR_SHA256=9a323d93897140f3ccb384a7279335d69f5659d1d29564b21f3d056f42272bdb \
     && echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk update \
     && apk add gcc make git 'go' \
-    && mkdir -p /tmp/api-gateway \
-    && curl -L https://github.com/adobe-apiplatform/api-gateway-config-supervisor/archive/${CONFIG_SUPERVISOR_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
+    && mkdir -p /tmp/api-gateway /usr/local/sbin \
+    && curl -sL https://github.com/adobe-apiplatform/api-gateway-config-supervisor/archive/${CONFIG_SUPERVISOR_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
+    && echo "${CONFIG_SUPERVISOR_SHA256}  /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz" | sha256sum -c - \
     && cd /tmp/api-gateway \
     && tar -xf /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}.tar.gz \
-    && mkdir -p /tmp/go \
-    && mv /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}/* /tmp/go \
-    && cd /tmp/go \
+    && mkdir -p ${GOPATH}/src/github.com/adobe-apiplatform/api-gateway-config-supervisor/ \
+    && mv /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}/* ${GOPATH}/src/github.com/adobe-apiplatform/api-gateway-config-supervisor/ \
+    && cd ${GOPATH}/src/github.com/adobe-apiplatform/api-gateway-config-supervisor/ \
     && make setup \
-    && mkdir -p /tmp/go/Godeps/_workspace \
-    && ln -s /tmp/go/vendor /tmp/go/Godeps/_workspace/src \
-    && mkdir -p /tmp/go-src/src/github.com/adobe-apiplatform \
-    && ln -s /tmp/go /tmp/go-src/src/github.com/adobe-apiplatform/api-gateway-config-supervisor \
-    && GOPATH=/tmp/go/vendor:/tmp/go-src CGO_ENABLED=0 GOOS=linux /usr/lib/go/bin/godep  go build -ldflags "-s" -a -installsuffix cgo -o api-gateway-config-supervisor ./ \
-    && mv /tmp/go/api-gateway-config-supervisor /usr/local/sbin/ \
-
+    && godep go build -ldflags "-s" -a -installsuffix cgo -o api-gateway-config-supervisor ./ \
+    && mv ./api-gateway-config-supervisor /usr/local/sbin/ \
+    \
     && echo "installing rclone sync ... skipped due to https://github.com/ncw/rclone/issues/663 ... " \
     # && go get github.com/ncw/rclone \
     # && mv /usr/lib/go/bin/rclone /usr/local/sbin/ \
-
+    \
     && echo " cleaning up ... " \
     && rm -rf /usr/lib/go/bin/src \
     && rm -rf /tmp/go \
@@ -222,10 +232,12 @@ RUN echo " ... installing aws-cli ..." \
 
 ENV HMAC_LUA_VERSION 1.0.0
 RUN echo " ... installing api-gateway-hmac ..." \
+    && HMAC_LUA_SHA256=53e6183cb3812418b55b9afba256f6d1f149cdd994c0c19df3bb70ac56310281 \
     && apk update \
-    && apk add make \
+    && apk add make perl-utils\
     && mkdir -p /tmp/api-gateway \
-    && curl -L https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz \
+    && curl -sL https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz \
+    && echo "${HMAC_LUA_SHA256}  /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION} \
     && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
@@ -237,10 +249,12 @@ RUN echo " ... installing api-gateway-hmac ..." \
 
 ENV CACHE_MANAGER_VERSION 1.0.1
 RUN echo " ... installing api-gateway-cachemanager..." \
+    && CACHE_MANAGER_SHA256=8d03c1b4a9b3d6ca9fcbf941c42c5795d12fe2fd3d2e58b56e33888acb993f26 \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -L https://github.com/adobe-apiplatform/api-gateway-cachemanager/archive/${CACHE_MANAGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz \
+    && curl -sL https://github.com/adobe-apiplatform/api-gateway-cachemanager/archive/${CACHE_MANAGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz \
+    && echo "${CACHE_MANAGER_SHA256}  /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION} \
     && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
@@ -255,10 +269,12 @@ RUN echo " ... installing api-gateway-cachemanager..." \
 
 ENV AWS_VERSION 1.7.1
 RUN echo " ... installing api-gateway-aws ..." \
+    && AWS_SHA256=d9fadd6602e2c139d389bd64329c72c129f76ad1d1c1857c2e4a3537d01e12fe \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -L https://github.com/adobe-apiplatform/api-gateway-aws/archive/${AWS_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz \
+    && curl -sL https://github.com/adobe-apiplatform/api-gateway-aws/archive/${AWS_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz \
+    && echo "${AWS_SHA256}  /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-aws-${AWS_VERSION} \
     && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
@@ -271,10 +287,12 @@ RUN echo " ... installing api-gateway-aws ..." \
 
 ENV REQUEST_VALIDATION_VERSION 1.2.4
 RUN echo " ... installing api-gateway-request-validation ..." \
+    && REQUEST_VALIDATION_SHA256=44ebce6119b6d3e1405a1fc203d97c9cb64d4a37ee8e26e00a0eec2b5814e176 \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -L https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
+    && curl -sL https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
+    && echo "${REQUEST_VALIDATION_SHA256}  /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION} \
     && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
@@ -289,10 +307,12 @@ RUN echo " ... installing api-gateway-request-validation ..." \
 
 ENV ASYNC_LOGGER_VERSION 1.0.1
 RUN echo " ... installing api-gateway-async-logger ..." \
+    && ASYNC_LOGGER_SHA256=de5e008d189daa619a189a8bb530ed1c58c29f8bf07903b26b818dadd4bcc8fa \
     && apk update \
     && apk add make \
     && mkdir -p /tmp/api-gateway \
-    && curl -L https://github.com/adobe-apiplatform/api-gateway-async-logger/archive/${ASYNC_LOGGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION}.tar.gz \
+    && curl -sL https://github.com/adobe-apiplatform/api-gateway-async-logger/archive/${ASYNC_LOGGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION}.tar.gz \
+    && echo "${ASYNC_LOGGER_SHA256}  /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION} \
     && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
@@ -303,9 +323,11 @@ RUN echo " ... installing api-gateway-async-logger ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV ZMQ_ADAPTOR_VERSION 0.2.1
+ENV ZMQ_ADAPTOR_VERSION 0235b04f39a480b5347411c278900e5c57874cf5
 RUN echo " ... installing api-gateway-zmq-adaptor" \
-         && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
+         && ZMQ_ADAPTOR_SHA256=d1aa7b70f5acfbf344508cdcac0d87401829b3073616dcf15dcfe337196ebcdc \
+         && curl -sL https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
+         && echo "${ZMQ_ADAPTOR_SHA256}  /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION}" | sha256sum -c - \
          && apk update \
          && apk add check-dev g++ gcc \
          && cd /tmp/ \
@@ -319,8 +341,10 @@ RUN echo " ... installing api-gateway-zmq-adaptor" \
 
 ENV ZMQ_LOGGER_VERSION 1.0.0
 RUN echo " ... installing api-gateway-zmq-logger ..." \
+        && ZMQ_LOGGER_SHA256=76afbe17397881719bf24775747276231841274976708cca8d3b37d6b95e61c8 \
         && mkdir -p /tmp/api-gateway \
-        && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-logger/archive/${ZMQ_LOGGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz \
+        && curl -sL https://github.com/adobe-apiplatform/api-gateway-zmq-logger/archive/${ZMQ_LOGGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz \
+        && echo "${ZMQ_LOGGER_SHA256}  /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz" | sha256sum -c - \
         && tar -xf /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
         && cd /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION} \
         && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
@@ -332,8 +356,10 @@ RUN echo " ... installing api-gateway-zmq-logger ..." \
 
 ENV REQUEST_TRACKING_VERSION 1.0.1
 RUN echo " ... installing api-gateway-request-tracking ..." \
+        && REQUEST_TRACKING_SHA256=6508d4eb444e0ae46bef262e0dd1def25f5762993e1810c21f1603ec57ce8895 \
         && mkdir -p /tmp/api-gateway \
-        && curl -L https://github.com/adobe-apiplatform/api-gateway-request-tracking/archive/${REQUEST_TRACKING_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION}.tar.gz \
+        && curl -sL https://github.com/adobe-apiplatform/api-gateway-request-tracking/archive/${REQUEST_TRACKING_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION}.tar.gz \
+        && echo "${REQUEST_TRACKING_SHA256}  /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION}.tar.gz" | sha256sum -c - \
         && tar -xf /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION}.tar.gz -C /tmp/api-gateway/ \
         && cd /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION} \
         && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
@@ -345,8 +371,10 @@ RUN echo " ... installing api-gateway-request-tracking ..." \
         # && apk del redis \
         && rm -rf /tmp/api-gateway
 
-RUN \
-    curl -L -k -s -o /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 \
+ENV JQ_VERSION 1.5
+RUN curl -sL https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/jq-linux64 -o /usr/local/bin/jq \
+    && JQ_SHA256=c6b3a7d7d3e7b70c6f51b706a3b90bd01833846c54d32ca32f0027f00226ff6d \
+    && echo "${JQ_SHA256}  /usr/local/bin/jq" | sha256sum -c - \
     && apk update \
     && apk add gawk \
     && chmod 755 /usr/local/bin/jq \
