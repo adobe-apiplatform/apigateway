@@ -209,7 +209,7 @@ RUN echo " ... installing api-gateway-config-supervisor  ... " \
     && make setup \
     && godep go build -ldflags "-s" -a -installsuffix cgo -o api-gateway-config-supervisor ./ \
     && mv ./api-gateway-config-supervisor /usr/local/sbin/ \
-
+    \
     && echo "installing rclone sync ... skipped due to https://github.com/ncw/rclone/issues/663 ... " \
     # && go get github.com/ncw/rclone \
     # && mv /usr/lib/go/bin/rclone /usr/local/sbin/ \
