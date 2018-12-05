@@ -48,15 +48,16 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
          && rm -rf /var/cache/apk/*
 
 ENV _prefix /usr/local
+
 # openresty build
 ENV OPENRESTY_VERSION 1.13.6.1
 ENV PCRE_VERSION 8.37
 RUN  echo " ... adding Openresty and PCRE" \
-     && OPENRESTY_SHA256=d1246e6cfa81098eea56fb88693e980d3e6b8752afae686fab271519b81d696b \
-     && PCRE_SHA256=19d490a714274a8c4c9d131f651489b8647cdb40a159e9fb7ce17ba99ef992ab \
      && _localstatedir=/var \
      && _sysconfdir=/etc \
-     && _sbindir=${_prefix}/sbin \
+     && _sbindir=/usr/local/sbin \
+     && OPENRESTY_SHA256=d1246e6cfa81098eea56fb88693e980d3e6b8752afae686fab271519b81d696b \
+     && PCRE_SHA256=19d490a714274a8c4c9d131f651489b8647cdb40a159e9fb7ce17ba99ef992ab \
      \
      && mkdir -p /tmp/api-gateway \
      && cd /tmp/api-gateway/ \
@@ -150,13 +151,12 @@ RUN  echo " ... adding Openresty and PCRE" \
 ENV TEST_NGINX_VERSION 0.24
 RUN echo " ... adding Nginx Test support..." \
     && TEST_NGINX_SHA256=a98083e801a7a088231da1e3a5e0d3aab743f07ffc65ede48fe8a7de132db9b3 \
-    && curl -sL https://github.com/openresty/test-nginx/archive/v${TEST_NGINX_VERSION}.tar.gz -o ${_prefix}/test-nginx.tar.gz \
-    && echo "${TEST_NGINX_SHA256}  ${_prefix}/test-nginx.tar.gz" | sha256sum -c - \
+    && curl -sL https://github.com/openresty/test-nginx/archive/v${TEST_NGINX_VERSION}.tar.gz -o ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
+    && echo "${TEST_NGINX_SHA256}  ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz" | sha256sum -c - \
     && cd ${_prefix} \
-    && tar -xf ${_prefix}/test-nginx.tar.gz \
-    && mv ${_prefix}/test-nginx-${TEST_NGINX_VERSION} ${_prefix}/test-nginx \
-    && rm ${_prefix}/test-nginx.tar.gz \
-    && cp -r ${_prefix}/test-nginx/inc/* /usr/local/share/perl5/site_perl/
+    && tar -xf ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
+    && rm ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
+    && cp -r ${_prefix}/test-nginx-${TEST_NGINX_VERSION}/inc/* /usr/local/share/perl5/site_perl/
 
 ENV LUA_RESTY_HTTP_VERSION 0.07
 RUN echo " ... installing lua-resty-http..." \
@@ -240,7 +240,7 @@ RUN echo " ... installing api-gateway-hmac ..." \
     && echo "${HMAC_LUA_SHA256}  /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION} \
-    && cp -r /usr/local/test-nginx/* ./test/resources/test-nginx/ \
+    && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
     && make test \
     && make install \
             LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
@@ -257,7 +257,7 @@ RUN echo " ... installing api-gateway-cachemanager..." \
     && echo "${CACHE_MANAGER_SHA256}  /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION} \
-    && cp -r /usr/local/test-nginx/* ./test/resources/test-nginx/ \
+    && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
     # && apk update && apk add redis \
     # && REDIS_SERVER=/usr/bin/redis-server make test \
     && make install \
@@ -277,7 +277,7 @@ RUN echo " ... installing api-gateway-aws ..." \
     && echo "${AWS_SHA256}  /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-aws-${AWS_VERSION} \
-    && cp -r /usr/local/test-nginx/* ./test/resources/test-nginx/ \
+    && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
     # && make test \
     && make install \
             LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
@@ -295,7 +295,7 @@ RUN echo " ... installing api-gateway-request-validation ..." \
     && echo "${REQUEST_VALIDATION_SHA256}  /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION} \
-    && cp -r /usr/local/test-nginx/* ./test/resources/test-nginx/ \
+    && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
     # && apk update && apk add redis \
     # && REDIS_SERVER=/usr/bin/redis-server make test \
     && make install \
@@ -315,7 +315,7 @@ RUN echo " ... installing api-gateway-async-logger ..." \
     && echo "${ASYNC_LOGGER_SHA256}  /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION}.tar.gz" | sha256sum -c - \
     && tar -xf /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
     && cd /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION} \
-    && cp -r /usr/local/test-nginx/* ./test/resources/test-nginx/ \
+    && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
     # && make test \
     && make install \
             LUA_LIB_DIR=${_prefix}/api-gateway/lualib \
@@ -347,7 +347,7 @@ RUN echo " ... installing api-gateway-zmq-logger ..." \
         && echo "${ZMQ_LOGGER_SHA256}  /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz" | sha256sum -c - \
         && tar -xf /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
         && cd /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION} \
-        && cp -r /usr/local/test-nginx/* ./test/resources/test-nginx/ \
+        && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
         && make test \
         && make install \
              LUA_LIB_DIR=/usr/local/api-gateway/lualib \
@@ -362,7 +362,7 @@ RUN echo " ... installing api-gateway-request-tracking ..." \
         && echo "${REQUEST_TRACKING_SHA256}  /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION}.tar.gz" | sha256sum -c - \
         && tar -xf /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION}.tar.gz -C /tmp/api-gateway/ \
         && cd /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION} \
-        && cp -r /usr/local/test-nginx/* ./test/resources/test-nginx/ \
+        && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
         # && apk update && apk add redis \
         # && REDIS_SERVER=/usr/bin/redis-server make test \
         && make install \
