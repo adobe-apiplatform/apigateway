@@ -94,7 +94,7 @@ if [[ -n "${remote_config_sync_cmd}" ]]; then
     sync_cmd="sh /tmp/remote_config_sync_cmd.sh"
 fi
 
-sudo api-gateway-config-supervisor \
+sudo -E api-gateway-config-supervisor \
         --reload-cmd="api-gateway -s reload" \
         --sync-folder=/etc/api-gateway \
         --sync-interval=${remote_config_sync_interval} \
