@@ -1,14 +1,14 @@
 # apigateway
 #
-# VERSION               1.9.7.3
+# VERSION               1.15.8.1
 #
 # From https://hub.docker.com/_/alpine/
 # alpine:3.4 if go <1.7
-FROM alpine:3.4
+FROM alpine:3.11
 
 # install dependencies
 RUN apk update \
-    && apk add gcc tar libtool zlib jemalloc jemalloc-dev perl \ 
+    && apk add gcc tar libtool zlib perl \
     make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
     perl-test-longstring perl-list-moreutils perl-http-message \
     geoip-dev sudo
@@ -44,9 +44,9 @@ RUN echo " ... adding throttling support with ZMQ and CZMQ" \
          && rm -rf /var/cache/apk/*
 
 # openresty build
-ENV OPENRESTY_VERSION=1.13.6.1 \
+ENV OPENRESTY_VERSION=1.15.8.1 \
     PCRE_VERSION=8.37 \
-    TEST_NGINX_VERSION=0.24 \
+    TEST_NGINX_VERSION=0.26 \
     _prefix=/usr/local \
     _exec_prefix=/usr/local \
     _localstatedir=/var \
@@ -142,7 +142,7 @@ RUN  echo " ... adding Openresty, NGINX, and PCRE" \
     && cd ${_prefix} \
     && tar -xf ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
     && rm ${_prefix}/test-nginx-${TEST_NGINX_VERSION}.tar.gz \
-    && cp -r ${_prefix}/test-nginx-0.24/inc/* /usr/local/share/perl5/site_perl/ \
+    && cp -r ${_prefix}/test-nginx-${TEST_NGINX_VERSION}/inc/* /usr/local/share/perl5/site_perl/ \
 
     && ln -s ${_sbindir}/api-gateway-debug ${_sbindir}/nginx \
     && cp /tmp/api-gateway/openresty-${OPENRESTY_VERSION}/build/install ${_prefix}/api-gateway/bin/resty-install \
@@ -219,6 +219,8 @@ RUN echo " ... installing aws-cli ..." \
     && apk add py-pip \
     && pip install --upgrade pip \
     && pip install awscli
+
+RUN apk add -v perl-test-harness-utils perl-utils
 
 ENV HMAC_LUA_VERSION 1.0.0
 RUN echo " ... installing api-gateway-hmac ..." \
