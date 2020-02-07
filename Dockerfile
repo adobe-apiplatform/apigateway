@@ -10,38 +10,8 @@ FROM alpine:3.11
 RUN apk update \
     && apk add gcc tar libtool zlib perl \
     make musl-dev openssl-dev pcre-dev g++ zlib-dev curl python \
-    perl-test-longstring perl-list-moreutils perl-http-message \
+    perl-test-longstring perl-list-moreutils perl-http-message perl-utils \
     geoip-dev sudo
-
-ENV ZMQ_VERSION 4.0.5
-ENV CZMQ_VERSION 2.2.0
-
-# Installing throttling dependencies
-RUN echo " ... adding throttling support with ZMQ and CZMQ" \
-         && apk add autoconf automake \
-         && curl -L https://github.com/zeromq/zeromq4-x/archive/v${ZMQ_VERSION}.tar.gz -o /tmp/zeromq.tar.gz \
-         && cd /tmp/ \
-         && tar -xf /tmp/zeromq.tar.gz \
-         && cd /tmp/zeromq*/ \
-         && ./autogen.sh \
-         && ./configure --prefix=/usr \
-                        --sysconfdir=/etc \
-                        --mandir=/usr/share/man \
-                        --infodir=/usr/share/info \
-         && make && make install \
-         && curl -L https://github.com/zeromq/czmq/archive/v${CZMQ_VERSION}.tar.gz -o /tmp/czmq.tar.gz \
-         && cd /tmp/ \
-         && tar -xf /tmp/czmq.tar.gz \
-         && cd /tmp/czmq*/ \
-         && ./autogen.sh \
-         && ./configure --prefix=/usr \
-                        --sysconfdir=/etc \
-                        --mandir=/usr/share/man \
-                        --infodir=/usr/share/info \
-         && make && make install \
-         && apk del automake autoconf \
-         && rm -rf /tmp/zeromq* && rm -rf /tmp/czmq* \
-         && rm -rf /var/cache/apk/*
 
 # openresty build
 ENV OPENRESTY_VERSION=1.15.8.1 \
@@ -220,8 +190,6 @@ RUN echo " ... installing aws-cli ..." \
     && pip install --upgrade pip \
     && pip install awscli
 
-RUN apk add -v perl-test-harness-utils perl-utils
-
 ENV HMAC_LUA_VERSION 1.0.0
 RUN echo " ... installing api-gateway-hmac ..." \
     && apk update \
@@ -305,33 +273,6 @@ RUN echo " ... installing api-gateway-async-logger ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV ZMQ_ADAPTOR_VERSION 0.2.1
-RUN echo " ... installing api-gateway-zmq-adaptor" \
-         && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-adaptor/archive/${ZMQ_ADAPTOR_VERSION}.tar.gz -o /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
-         && apk update \
-         && apk add check-dev g++ gcc \
-         && cd /tmp/ \
-         && tar -xf /tmp/api-gateway-zmq-adaptor-${ZMQ_ADAPTOR_VERSION} \
-         && cd /tmp/api-gateway-zmq-adaptor-* \
-         && make test \
-         && PREFIX=/usr/local/sbin make install \
-         && rm -rf /tmp/api-gateway-zmq-adaptor-* \
-         && apk del check-dev g++ gcc \
-         && rm -rf /var/cache/apk/*
-
-ENV ZMQ_LOGGER_VERSION 1.0.0
-RUN echo " ... installing api-gateway-zmq-logger ..." \
-        && mkdir -p /tmp/api-gateway \
-        && curl -L https://github.com/adobe-apiplatform/api-gateway-zmq-logger/archive/${ZMQ_LOGGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz \
-        && tar -xf /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION}.tar.gz -C /tmp/api-gateway/ \
-        && cd /tmp/api-gateway/api-gateway-zmq-logger-${ZMQ_LOGGER_VERSION} \
-        && cp -r /usr/local/test-nginx-${TEST_NGINX_VERSION}/* ./test/resources/test-nginx/ \
-        && make test \
-        && make install \
-             LUA_LIB_DIR=/usr/local/api-gateway/lualib \
-             INSTALL=/usr/local/api-gateway/bin/resty-install \
-        && rm -rf /tmp/api-gateway
-
 ENV REQUEST_TRACKING_VERSION 1.0.1
 RUN echo " ... installing api-gateway-request-tracking ..." \
         && mkdir -p /tmp/api-gateway \
@@ -346,6 +287,24 @@ RUN echo " ... installing api-gateway-request-tracking ..." \
              INSTALL=/usr/local/api-gateway/bin/resty-install \
         # && apk del redis \
         && rm -rf /tmp/api-gateway
+
+ENV RCLONE_VERSION=v1.49.4
+RUN  echo " ... installing rclone  ... " \
+    && apk update && apk add curl \
+    && curl -L https://github.com/ncw/rclone/releases/download/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-amd64.zip -o /tmp/rclone.zip \
+    && unzip /tmp/rclone.zip -d /tmp/ \
+    && cp /tmp/rclone-${RCLONE_VERSION}-linux-amd64/rclone /usr/local/bin/ \
+    && rm -rf /tmp/rclone* \
+    && rm -rf /var/cache/apk/*
+
+ENV PROMETHEUS_EXPORTER_VERSION=0.5.0
+RUN  echo " ... adding nginx-prometheus-exporter" \
+     && mkdir -p /tmp/api-gateway \
+     && cd /tmp/api-gateway/ \
+     && curl -L https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v${PROMETHEUS_EXPORTER_VERSION}/nginx-prometheus-exporter-${PROMETHEUS_EXPORTER_VERSION}-linux-amd64.tar.gz -o /tmp/api-gateway/nginx-prometheus-exporter-${PROMETHEUS_EXPORTER_VERSION}-linux-amd64.tar.gz \
+     && tar -zxf ./nginx-prometheus-exporter-${PROMETHEUS_EXPORTER_VERSION}-linux-amd64.tar.gz \
+     && cp ./nginx-prometheus-exporter /etc/nginx-prometheus-exporter \
+     && rm -rf /tmp/api-gateway
 
 RUN \
     curl -L -k -s -o /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 \
