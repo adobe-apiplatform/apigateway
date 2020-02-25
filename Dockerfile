@@ -170,10 +170,6 @@ RUN echo " ... installing api-gateway-config-supervisor  ... " \
     && GOPATH=/tmp/go/vendor:/tmp/go-src CGO_ENABLED=0 GOOS=linux /usr/lib/go/bin/godep  go build -ldflags "-s" -a -installsuffix cgo -o api-gateway-config-supervisor ./ \
     && mv /tmp/go/api-gateway-config-supervisor /usr/local/sbin/ \
 
-    && echo "installing rclone sync ... skipped due to https://github.com/ncw/rclone/issues/663 ... " \
-    # && go get github.com/ncw/rclone \
-    # && mv /usr/lib/go/bin/rclone /usr/local/sbin/ \
-
     && echo " cleaning up ... " \
     && rm -rf /usr/lib/go/bin/src \
     && rm -rf /tmp/go \

@@ -77,7 +77,7 @@ local function initMetricsFactory(parentObject)
 end
 
 initValidationFactory(_M)
-initZMQLogger(_M)
+-- initZMQLogger(_M)
 initTrackingFactory(_M)
 initMetricsFactory(_M)
 -- TODO: test health-check with the new version of Openresty
