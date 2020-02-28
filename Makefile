@@ -1,5 +1,5 @@
 DOCKER_TAG ?= snapshot-`date +'%Y%m%d-%H%M'`
-DOCKER_REGISTRY ?= ''
+DOCKER_REGISTRY ?= 'docker.io'
 
 docker:
 	docker build -t adobeapiplatform/apigateway .
@@ -52,6 +52,6 @@ docker-compose:
 
 .PHONY: docker-push
 docker-push:
-	docker tag -f adobeapiplatform/apigateway $(DOCKER_REGISTRY)/adobeapiplatform/apigateway:$(DOCKER_TAG)
+	docker tag adobeapiplatform/apigateway $(DOCKER_REGISTRY)/adobeapiplatform/apigateway:$(DOCKER_TAG)
 	docker push $(DOCKER_REGISTRY)/adobeapiplatform/apigateway:$(DOCKER_TAG)
 

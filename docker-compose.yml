@@ -6,6 +6,7 @@ gateway:
     - ~/tmp/apiplatform/apigateway/api-gateway-config/:/etc/api-gateway
   ports:
   - "80:80"
+  - "9113:9113"
   environment:
   - LOG_LEVEL=info
   - DEBUG=true

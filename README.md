@@ -111,6 +111,9 @@ To learn more about the `resolver` directive in NGINX see the [docs](http://ngin
 #### Running the API Gateway outside of Marathon and Mesos
 Besides the discovery part which is dependent on Marathon at the  moment, the API Gateway can run on its own as well. The Marathon service discovery is activated with the ` -e "MARATHON_HOST=http://<marathon_host>:<port>/"`.
 
+#### Monitoring
+Prometheus metrics are exposed on port `9113`. 
+
 What's inside
 =============
 
