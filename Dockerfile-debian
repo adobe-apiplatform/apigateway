@@ -67,6 +67,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
         zlib1g-dev \
         gcc \
         python2.7 \
+        iproute2 \
+        htop \
     && ln -s /usr/bin/python2.7 /usr/bin/python \
     && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
     && cd /tmp \
@@ -101,7 +103,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
         openssl-${RESTY_OPENSSL_VERSION} \
         openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
         openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
-        pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION}
+        pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION} \
+        rm -rf /var/lib/apt/lists/*
 
 ARG LUA_RESTY_HTTP_VERSION=0.07
 RUN echo " ... installing lua-resty-http..." \
@@ -251,7 +254,6 @@ RUN  echo " ... adding nginx-prometheus-exporter" \
 
 RUN echo " ... adding jq" \ \
     && curl -L -k -s -o /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 \
-    && apt-get install -y \
     && chmod 755 ${_prefix}/bin/jq \
     && rm -rf /var/cache/apk/*
 
