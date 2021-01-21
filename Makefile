@@ -15,17 +15,6 @@ docker-ssh:
 docker-run:
 	docker run --rm --name="apigateway" -p 80:80 -p 5000:5000 -p 9113:9113 adobeapiplatform/apigateway:latest ${DOCKER_ARGS}
 
-docker-run-debian:
-	docker run --rm --name="apigateway" -p 80:80 -p 5000:5000 -p 9113:9113 \
-	    -e MARATHON_HOST=foo \
-	    -e REMOTE_CONFIG_SYNC_INTERVAL=10s \
-	    -e "REMOTE_CONFIG_SYNC_CMD=rclone sync --filter '- *resolvers.conf' --filter '- *environment.conf.d/api-gateway-env.server.conf' --filter '- *environment.conf.d/*vars.server.conf' --filter '- *environment.conf.d/*upstreams.http.conf' --exclude '*generated-conf.d/wsk**' azureblob:runtime-blob-apigw-config/api-gateway-config-0.1.36/ /etc/api-gateway/ ; rclone sync --exclude '**openwhisk_generated_apis.conf' azureblob:runtime-blob-apigw-apimgmt/ /etc/api-gateway/generated-conf.d/" \
-	    -e RCLONE_CONFIG_AZUREBLOB_TYPE=azureblob \
-	    -e RCLONE_CONFIG_AZUREBLOB_ACCOUNT=adobeioruntimestage \
-	    -e RCLONE_CONFIG_AZUREBLOB_KEY=xUxNZSH7oVaMxqVVTvqdh8bvGx8McqAyUXXa4wu1tcZuagwSshboCawtCUo5IprPOt5s7Wd/QPE+b4nhUeU8+A== \
-	    -e RCLONE_CONFIG_AZUREBLOB_ENDPOINT= \
-	    adobeapiplatform/apigateway-debian:1.17.8.2 ${DOCKER_ARGS}
-
 .PHONY: docker-debug
 docker-debug:
 	#Volumes directories must be under your Users directory
