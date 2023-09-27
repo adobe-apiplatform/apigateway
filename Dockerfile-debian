@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:buster-20201117-slim
 
 ARG _prefix=/usr/local
 ARG _exec_prefix=/usr/local/api-gateway
@@ -8,10 +8,9 @@ ARG _sbindir=/usr/local/sbin
 
 ARG TEST_NGINX_VERSION=0.26
 # Docker Build Arguments
-ARG RESTY_VERSION="1.21.4.1"
+ARG RESTY_VERSION="1.21.4.2"
 ARG RESTY_LUAROCKS_VERSION="3.9.2"
-ARG RESTY_OPENSSL_VERSION="1.1.1"
-ARG RESTY_PCRE_VERSION="8.42"
+ARG RESTY_OPENSSL_VERSION="3.1.3"
 ARG RESTY_CONFIG_OPTIONS="\
                 --prefix=${_exec_prefix} \
                 --sbin-path=${_sbindir}/api-gateway \
@@ -46,9 +45,7 @@ ARG RESTY_CONFIG_OPTIONS="\
 ARG RESTY_CONFIG_OPTIONS_MORE=""
 
 # These are not intended to be user-specified
-ARG _RESTY_CONFIG_DEPS="--with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre=/tmp/pcre-${RESTY_PCRE_VERSION}"
-
-ADD ./dist/pcre/pcre-${RESTY_PCRE_VERSION}.tar.gz /tmp
+ARG _RESTY_CONFIG_DEPS="--with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre"
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -57,6 +54,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
         ca-certificates \
         curl \
         gettext-base \
+        libpcre3-dev \
         libgd-dev \
         libgeoip-dev \
         libncurses5-dev \
@@ -70,35 +68,32 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
         gcc \
         python2.7 \
         iproute2 \
-        htop \
-    && ln -s /usr/bin/python2.7 /usr/bin/python \
-    && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
-    && cd /tmp \
+        htop
+
+RUN cd /tmp \
     && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz
 
 RUN cd /tmp \
     && curl -fSL https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
-    && cd /tmp/openresty-${RESTY_VERSION} \
-    && ./configure ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE}
+    && cd openresty-${RESTY_VERSION} \
+    && ln -s /usr/bin/python2.7 /usr/bin/python \
+    && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
+    && ./configure -j${NPROC} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
+    && make -j${NPROC} \
+    && make -j${NPROC} install
 
-RUN cd /tmp/openresty-${RESTY_VERSION} \
-    && ls -la /tmp/pcre-${RESTY_PCRE_VERSION}/ \
-    && make \
-    && make install
-
-RUN cd /tmp/openresty-${RESTY_VERSION} \
-    && curl -fSL https://github.com/luarocks/luarocks/archive/refs/tags/v${RESTY_LUAROCKS_VERSION}.tar.gz -o luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz \
+RUN echo " ... installing luarocks..." \
+    && cd /tmp \
+    && curl -fSL https://github.com/luarocks/luarocks/archive/v${RESTY_LUAROCKS_VERSION}.tar.gz -o luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz \
     && tar xzf luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz \
     && cd luarocks-${RESTY_LUAROCKS_VERSION} \
     && ./configure \
         --prefix=${_exec_prefix}/luajit \
         --with-lua=${_exec_prefix}/luajit \
         --lua-suffix=jit-2.1.0-beta3 \
-        --with-lua-include=${_exec_prefix}/luajit/include/luajit-2.1
-
-RUN cd /tmp/openresty-${RESTY_VERSION}/luarocks-${RESTY_LUAROCKS_VERSION} \
+        --with-lua-include=${_exec_prefix}/luajit/include/luajit-2.1 \
     && make build \
     && make install \
     && ln -sf /dev/stdout ${_localstatedir}/log/api-gateway/error.log \
@@ -111,9 +106,10 @@ RUN cd /tmp/openresty-${RESTY_VERSION}/luarocks-${RESTY_LUAROCKS_VERSION} \
     && rm -rf \
         openssl-${RESTY_OPENSSL_VERSION} \
         openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
+        openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
         rm -rf /var/lib/apt/lists/*
 
-ARG LUA_RESTY_HTTP_VERSION=0.07
+ARG LUA_RESTY_HTTP_VERSION=0.17.1
 RUN echo " ... installing lua-resty-http..." \
     && mkdir -p /tmp/api-gateway \
     && curl -L https://github.com/pintsized/lua-resty-http/archive/v${LUA_RESTY_HTTP_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-http-${LUA_RESTY_HTTP_VERSION}.tar.gz \
@@ -124,7 +120,7 @@ RUN echo " ... installing lua-resty-http..." \
             INSTALL=${_exec_prefix}/bin/resty-install \
     && rm -rf /tmp/api-gateway
 
-ENV LUA_RESTY_IPUTILS_VERSION 0.2.0
+ENV LUA_RESTY_IPUTILS_VERSION 0.3.0
 RUN echo " ... installing lua-resty-iputils..." \
     && mkdir -p /tmp/api-gateway \
     && curl -L https://github.com/hamishforbes/lua-resty-iputils/archive/v${LUA_RESTY_IPUTILS_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz \
@@ -160,7 +156,6 @@ RUN echo " ... installing go supervisor..." \
     && go get github.com/tools/godep \
     && GOPATH=/tmp/go/vendor:/tmp/go-src CGO_ENABLED=0 GOOS=linux /usr/lib/go/bin/godep  go build -ldflags "-s" -a -installsuffix cgo -o api-gateway-config-supervisor ./ \
     && mv /tmp/go/api-gateway-config-supervisor /usr/local/sbin/ \
-
     && echo " cleaning up ... " \
     && rm -rf /tmp/api-gateway \
     && rm -rf /usr/lib/go/bin/src \
@@ -207,12 +202,12 @@ RUN echo " ... installing api-gateway-aws ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV REQUEST_VALIDATION_VERSION 1.2.4
+ENV REQUEST_VALIDATION_VERSION 1.3.10
 RUN echo " ... installing api-gateway-request-validation ..." \
     && mkdir -p /tmp/api-gateway \
-    && curl -L https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
+    && curl -L https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
     && tar -xf /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz -C /tmp/api-gateway/ \
-    && cd /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION} \
+    && cd /tmp/api-gateway/api-gateway-request-validation-api-gateway-request-validation-${REQUEST_VALIDATION_VERSION} \
     && make install \
             LUA_LIB_DIR=${_exec_prefix}/lualib \
             INSTALL=${_exec_prefix}/bin/resty-install \
@@ -250,11 +245,11 @@ RUN  echo " ... installing rclone  ... " \
     && rm -rf /tmp/rclone* \
     && rm -rf /var/cache/apk/*
 
-ENV PROMETHEUS_EXPORTER_VERSION=0.5.0
+ENV PROMETHEUS_EXPORTER_VERSION=0.11.0
 RUN  echo " ... adding nginx-prometheus-exporter" \
      && mkdir -p /tmp/api-gateway \
      && cd /tmp/api-gateway/ \
-     && curl -L https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v${PROMETHEUS_EXPORTER_VERSION}/nginx-prometheus-exporter-${PROMETHEUS_EXPORTER_VERSION}-linux-amd64.tar.gz -o /tmp/api-gateway/nginx-prometheus-exporter-${PROMETHEUS_EXPORTER_VERSION}-linux-amd64.tar.gz \
+     && curl -L https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v${PROMETHEUS_EXPORTER_VERSION}/nginx-prometheus-exporter_${PROMETHEUS_EXPORTER_VERSION}_linux_amd64.tar.gz -o /tmp/api-gateway/nginx-prometheus-exporter-${PROMETHEUS_EXPORTER_VERSION}-linux-amd64.tar.gz \
      && tar -zxf ./nginx-prometheus-exporter-${PROMETHEUS_EXPORTER_VERSION}-linux-amd64.tar.gz \
      && cp ./nginx-prometheus-exporter /etc/nginx-prometheus-exporter \
      && rm -rf /tmp/api-gateway
@@ -265,7 +260,7 @@ RUN echo " ... adding jq" \ \
     && rm -rf /var/cache/apk/*
 
 
-RUN apt-get -y remove --purge --allow-remove-essential make unzip gcc git zlib1g-dev build-essential \
+RUN apt-get -y remove --purge --allow-remove-essential make unzip gcc git zlib1g-dev build-essential libpcre3-dev \
     && apt-get -y autoremove
 
 COPY init.sh /etc/init-container.sh
