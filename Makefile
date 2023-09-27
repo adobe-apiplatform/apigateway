@@ -5,7 +5,7 @@ docker:
 	docker build -t adobeapiplatform/apigateway .
 
 docker-debian:
-	docker build -t adobeapiplatform/apigateway-debian:1.21.4.2 -f Dockerfile-debian .
+	docker build -t adobeapiplatform/apigateway:debian-1.21.4.2 -f Dockerfile-debian .
 
 .PHONY: docker-ssh
 docker-ssh:
