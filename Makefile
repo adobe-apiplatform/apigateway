@@ -7,6 +7,9 @@ docker:
 docker-debian:
 	docker build -t adobeapiplatform/apigateway:debian-1.21.4.2 -f Dockerfile-debian .
 
+docker-debian-multiarch:
+	docker buildx build --platform linux/amd64,linux/arm64 --output "type=image,push=false" -t adobeapiplatform/apigateway:multiarch-debian-1.21.4.2 -f Dockerfile-debian .
+
 .PHONY: docker-ssh
 docker-ssh:
 	docker run -ti --entrypoint='bash' adobeapiplatform/apigateway:latest
