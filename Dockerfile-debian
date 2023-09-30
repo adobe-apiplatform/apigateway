@@ -225,9 +225,9 @@ RUN echo " ... installing api-gateway-request-tracking ..." \
 
 ENV RCLONE_VERSION=v1.49.4
 RUN  echo " ... installing rclone  ... " \
-    && curl -Lk https://github.com/ncw/rclone/releases/download/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-amd64.zip -o /tmp/rclone.zip \
+    && curl -Lk https://github.com/ncw/rclone/releases/download/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-${TARGETOS}-${TARGETARCH}.zip -o /tmp/rclone.zip \
     && unzip /tmp/rclone.zip -d /tmp/ \
-    && cp /tmp/rclone-${RCLONE_VERSION}-linux-amd64/rclone ${_prefix}/bin/ \
+    && cp /tmp/rclone-${RCLONE_VERSION}-${TARGETOS}-${TARGETARCH}/rclone ${_prefix}/bin/ \
     && rm -rf /tmp/rclone* \
     && rm -rf /var/cache/apk/*
 
@@ -235,13 +235,13 @@ ENV PROMETHEUS_EXPORTER_VERSION=0.11.0
 RUN  echo " ... adding nginx-prometheus-exporter" \
      && mkdir -p /tmp/api-gateway \
      && cd /tmp/api-gateway/ \
-     && curl -Lk https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v${PROMETHEUS_EXPORTER_VERSION}/nginx-prometheus-exporter_${PROMETHEUS_EXPORTER_VERSION}_linux_amd64.tar.gz -o /tmp/api-gateway/nginx-prometheus-exporter-${PROMETHEUS_EXPORTER_VERSION}-linux-amd64.tar.gz \
-     && tar -zxf ./nginx-prometheus-exporter-${PROMETHEUS_EXPORTER_VERSION}-linux-amd64.tar.gz \
+     && curl -Lk https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v${PROMETHEUS_EXPORTER_VERSION}/nginx-prometheus-exporter_${PROMETHEUS_EXPORTER_VERSION}_${TARGETOS}_${TARGETARCH}.tar.gz -o /tmp/api-gateway/nginx-prometheus-exporter-${PROMETHEUS_EXPORTER_VERSION}-${TARGETOS}-${TARGETARCH}.tar.gz \
+     && tar -zxf ./nginx-prometheus-exporter-${PROMETHEUS_EXPORTER_VERSION}-${TARGETOS}-${TARGETARCH}.tar.gz \
      && cp ./nginx-prometheus-exporter /etc/nginx-prometheus-exporter \
      && rm -rf /tmp/api-gateway
 
-RUN echo " ... adding jq" \ \
-    && curl -L -k -s -o /usr/local/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 \
+RUN echo " ... adding jq" \
+    && curl -L -k -s -o /usr/local/bin/jq https://github.com/jqlang/jq/releases/download/jq-1.7/jq-${TARGETOS}-${TARGETARCH} \
     && chmod 755 ${_prefix}/bin/jq \
     && rm -rf /var/cache/apk/*
 
