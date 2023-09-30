@@ -1,5 +1,5 @@
 # Use the official Go builder image as a builder stage
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.17-buster AS builder
+FROM --platform=${TARGETPLATFORM:-linux/amd64} golang:1.17-buster AS builder
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
