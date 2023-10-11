@@ -188,18 +188,6 @@ RUN echo " ... installing api-gateway-aws ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV REQUEST_VALIDATION_VERSION 1.3.10
-RUN echo " ... installing api-gateway-request-validation ..." \
-    && mkdir -p /tmp/api-gateway \
-    && curl -Lk https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
-    && tar -xf /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz -C /tmp/api-gateway/ \
-    && cd /tmp/api-gateway/api-gateway-request-validation-api-gateway-request-validation-${REQUEST_VALIDATION_VERSION} \
-    && make install \
-            LUA_LIB_DIR=${_exec_prefix}/lualib \
-            INSTALL=${_exec_prefix}/bin/resty-install \
-    && rm -rf /var/cache/apk/* \
-    && rm -rf /tmp/api-gateway
-
 ENV ASYNC_LOGGER_VERSION 1.0.1
 RUN echo " ... installing api-gateway-async-logger ..." \
     && mkdir -p /tmp/api-gateway \
@@ -245,13 +233,25 @@ RUN echo " ... adding jq" \
     && chmod 755 ${_prefix}/bin/jq \
     && rm -rf /var/cache/apk/*
 
+ENV REQUEST_VALIDATION_VERSION 1.3.21
+RUN echo " ... installing api-gateway-request-validation ..." \
+    && mkdir -p /tmp/api-gateway \
+    && curl -Lk https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
+    && tar -xf /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz -C /tmp/api-gateway/ \
+    && cd /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION} \
+    && make install \
+            LUA_LIB_DIR=${_exec_prefix}/lualib \
+            INSTALL=${_exec_prefix}/bin/resty-install \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/api-gateway
+
 
 RUN apt-get -y remove --purge --allow-remove-essential make unzip gcc git zlib1g-dev build-essential libpcre3-dev \
     && apt-get -y autoremove
 
 
 # Final image stage
-FROM --platform=${TARGETPLATFORM:-linux/amd64} debian:12-slim
+FROM --platform=${TARGETPLATFORM:-linux/amd64} debian:10-slim
 
 COPY --from=builder /tmp/api-gateway-config-supervisor /usr/local/sbin/
 COPY --from=builder /usr/local/api-gateway/ /usr/local/api-gateway/

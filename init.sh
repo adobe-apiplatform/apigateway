@@ -23,6 +23,8 @@
 # */
 debug_mode=${DEBUG}
 log_level=${LOG_LEVEL:-warn}
+marathon_host=${MARATHON_HOST}
+sleep_duration=${MARATHON_POLL_INTERVAL:-5}
 #
 # location for a remote /etc/api-gateway folder.
 # i.e s3://api-gateway-config
@@ -74,6 +76,22 @@ sudo -E api-gateway-config-supervisor \
         --sync-interval=${remote_config_sync_interval} \
         --sync-cmd="${sync_cmd}" \
         --http-addr=127.0.0.1:8888 &
+
+if [[ -n "${marathon_host}" ]]; then
+    echo "  ... starting Marathon Service Discovery on ${marathon_host}"
+    touch /var/run/apigateway-config-watcher.lastrun
+    # start marathon's service discovery
+    while true; do sh /etc/api-gateway/marathon-service-discovery.sh > /dev/stderr; sleep ${sleep_duration}; done &
+    # start simple statsd logger
+    #
+    # ASSUMPTION: there is a graphite app named "api-gateway-graphite" deployed in marathon
+    #
+    while true; do \
+        statsd_host=$(curl -s ${marathon_host}/v2/apps/api-gateway-graphite/tasks -H "Accept:text/plain" | grep 8125 | awk '{for(i=3;i<=NF;++i) printf("%s ", $i) }' | awk '{for(i=1;i<=NF;++i) sub(/:[[:digit:]]+/,"",$i); print }' ); \
+        if [[ -n "${statsd_host}" ]]; then python /etc/api-gateway/scripts/python/logger/StatsdLogger.py --statsd-host=${statsd_host} > /var/log/api-gateway/statsd-logger.log; fi; \
+        sleep 6; \
+    done &
+fi
 
 echo "   ... testing configuration "
 sudo api-gateway -t -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf
