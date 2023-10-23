@@ -8,7 +8,7 @@ docker-debian:
 	docker build -t adobeapiplatform/apigateway:10-debian-1.21.4.2 -f Dockerfile-debian .
 
 docker-debian-multiarch:
-	docker buildx build --platform linux/amd64,linux/arm64 --push -t adobeapiplatform/apigateway:10-debian-1.21.4.2-multiarch -f Dockerfile-debian .
+	docker buildx build --platform linux/amd64,linux/arm64 --push -t adobeapiplatform/apigateway:buster-v1.21.4.2-validation-v1.3.22-multiarch -f Dockerfile-debian .
 
 .PHONY: docker-ssh
 docker-ssh:

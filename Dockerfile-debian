@@ -235,7 +235,7 @@ RUN echo " ... adding jq" \
     && chmod 755 ${_prefix}/bin/jq \
     && rm -rf /var/cache/apk/*
 
-ENV REQUEST_VALIDATION_VERSION 1.3.21
+ENV REQUEST_VALIDATION_VERSION 1.3.22
 RUN echo " ... installing api-gateway-request-validation ..." \
     && mkdir -p /tmp/api-gateway \
     && curl -Lk https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
