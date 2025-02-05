@@ -1,27 +1,20 @@
-# Use the official Go builder image as a builder stage
-FROM --platform=${TARGETPLATFORM:-linux/amd64} golang:1.17-buster AS builder
+ARG BASE_REGISTRY="docker.io"
 
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
+FROM ${BASE_REGISTRY}/golang:1.23.4-bullseye AS builder
+
 ARG TARGETOS
 ARG TARGETARCH
+ARG CONFIG_SUPERVISOR_VERSION
 
 RUN apt-get update && \
     apt-get install -y curl make && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ENV CONFIG_SUPERVISOR_VERSION 1.0.3
-RUN mkdir -p /tmp/api-gateway \
-    && cd /tmp/api-gateway \
-    && curl -L https://github.com/adobe-apiplatform/api-gateway-config-supervisor/archive/${CONFIG_SUPERVISOR_VERSION}.tar.gz | tar -C /tmp/api-gateway -xz
-
-RUN cd /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION} \
-    && make setup \
-    && go mod init \
-    && go mod vendor \
+ADD https://github.com/adobe-apiplatform/api-gateway-config-supervisor.git#${CONFIG_SUPERVISOR_VERSION} /tmp/api-gateway/api-gateway-config-supervisor
+RUN cd /tmp/api-gateway/api-gateway-config-supervisor \
     && CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags "-s" -a -installsuffix cgo -o api-gateway-config-supervisor ./ \
-    && mv /tmp/api-gateway/api-gateway-config-supervisor-${CONFIG_SUPERVISOR_VERSION}/api-gateway-config-supervisor /tmp/
+    && mv /tmp/api-gateway/api-gateway-config-supervisor/api-gateway-config-supervisor /tmp/
 
 ARG _prefix=/usr/local
 ARG _exec_prefix=/usr/local/api-gateway
@@ -143,7 +136,7 @@ RUN echo " ... installing lua-resty-http..." \
             INSTALL=${_exec_prefix}/bin/resty-install \
     && rm -rf /tmp/api-gateway
 
-ENV LUA_RESTY_IPUTILS_VERSION 0.3.0
+ENV LUA_RESTY_IPUTILS_VERSION=0.3.0
 RUN echo " ... installing lua-resty-iputils..." \
     && mkdir -p /tmp/api-gateway \
     && curl -Lk https://github.com/hamishforbes/lua-resty-iputils/archive/v${LUA_RESTY_IPUTILS_VERSION}.tar.gz -o /tmp/api-gateway/lua-resty-iputils-${LUA_RESTY_IPUTILS_VERSION}.tar.gz \
@@ -155,7 +148,7 @@ RUN echo " ... installing lua-resty-iputils..." \
     && $INSTALL lib/resty/*.lua ${LUA_LIB_DIR}/resty/ \
     && rm -rf /tmp/api-gateway
 
-ENV HMAC_LUA_VERSION 1.0.0
+ENV HMAC_LUA_VERSION=1.0.0
 RUN echo " ... installing api-gateway-hmac ..." \
     && mkdir -p /tmp/api-gateway \
     && curl -Lk https://github.com/adobe-apiplatform/api-gateway-hmac/archive/${HMAC_LUA_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-hmac-${HMAC_LUA_VERSION}.tar.gz \
@@ -166,7 +159,7 @@ RUN echo " ... installing api-gateway-hmac ..." \
             INSTALL=${_exec_prefix}/bin/resty-install \
     && rm -rf /tmp/api-gateway
 
-ENV CACHE_MANAGER_VERSION 1.0.1
+ENV CACHE_MANAGER_VERSION=1.0.1
 RUN echo " ... installing api-gateway-cachemanager..." \
     && mkdir -p /tmp/api-gateway \
     && curl -Lk https://github.com/adobe-apiplatform/api-gateway-cachemanager/archive/${CACHE_MANAGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-cachemanager-${CACHE_MANAGER_VERSION}.tar.gz \
@@ -178,7 +171,7 @@ RUN echo " ... installing api-gateway-cachemanager..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV AWS_VERSION 1.7.1
+ENV AWS_VERSION=1.7.1
 RUN echo " ... installing api-gateway-aws ..." \
     && mkdir -p /tmp/api-gateway \
     && curl -Lk https://github.com/adobe-apiplatform/api-gateway-aws/archive/${AWS_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-aws-${AWS_VERSION}.tar.gz \
@@ -190,7 +183,7 @@ RUN echo " ... installing api-gateway-aws ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV ASYNC_LOGGER_VERSION 1.0.1
+ENV ASYNC_LOGGER_VERSION=1.0.1
 RUN echo " ... installing api-gateway-async-logger ..." \
     && mkdir -p /tmp/api-gateway \
     && curl -Lk https://github.com/adobe-apiplatform/api-gateway-async-logger/archive/${ASYNC_LOGGER_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-async-logger-${ASYNC_LOGGER_VERSION}.tar.gz \
@@ -202,7 +195,7 @@ RUN echo " ... installing api-gateway-async-logger ..." \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/api-gateway
 
-ENV REQUEST_TRACKING_VERSION 1.0.1
+ENV REQUEST_TRACKING_VERSION=1.0.1
 RUN echo " ... installing api-gateway-request-tracking ..." \
         && mkdir -p /tmp/api-gateway \
         && curl -Lk https://github.com/adobe-apiplatform/api-gateway-request-tracking/archive/${REQUEST_TRACKING_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-tracking-${REQUEST_TRACKING_VERSION}.tar.gz \
@@ -221,7 +214,7 @@ RUN  echo " ... installing rclone  ... " \
     && rm -rf /tmp/rclone* \
     && rm -rf /var/cache/apk/*
 
-ENV PROMETHEUS_EXPORTER_VERSION=0.11.0
+ENV PROMETHEUS_EXPORTER_VERSION=1.4.1
 RUN  echo " ... adding nginx-prometheus-exporter" \
      && mkdir -p /tmp/api-gateway \
      && cd /tmp/api-gateway/ \
@@ -235,7 +228,7 @@ RUN echo " ... adding jq" \
     && chmod 755 ${_prefix}/bin/jq \
     && rm -rf /var/cache/apk/*
 
-ENV REQUEST_VALIDATION_VERSION 1.3.22
+ENV REQUEST_VALIDATION_VERSION=1.3.22
 RUN echo " ... installing api-gateway-request-validation ..." \
     && mkdir -p /tmp/api-gateway \
     && curl -Lk https://github.com/adobe-apiplatform/api-gateway-request-validation/archive/${REQUEST_VALIDATION_VERSION}.tar.gz -o /tmp/api-gateway/api-gateway-request-validation-${REQUEST_VALIDATION_VERSION}.tar.gz \
@@ -253,7 +246,7 @@ RUN apt-get -y remove --purge --allow-remove-essential make unzip gcc git zlib1g
 
 
 # Final image stage
-FROM --platform=${TARGETPLATFORM:-linux/amd64} debian:10-slim
+FROM ${BASE_REGISTRY}/debian:11-slim
 
 COPY --from=builder /tmp/api-gateway-config-supervisor /usr/local/sbin/
 COPY --from=builder /usr/local/api-gateway/ /usr/local/api-gateway/

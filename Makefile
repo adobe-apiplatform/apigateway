@@ -1,22 +1,25 @@
 DOCKER_TAG ?= snapshot-`date +'%Y%m%d-%H%M'`
 DOCKER_REGISTRY ?= 'docker.io'
+BASE_REGISTRY ?= 'docker.io'
+IMAGE_NAME ?= 'adobeapiplatform/apigateway'
+CONFIG_SUPERVISOR_VERSION ?= '1.0.3'
 
 docker:
-	docker build -t adobeapiplatform/apigateway .
+	docker build --build-arg BASE_REGISTRY=${BASE_REGISTRY} --build-arg CONFIG_SUPERVISOR_VERSION=${CONFIG_SUPERVISOR_VERSION} -t ${IMAGE_NAME} .
 
 docker-debian:
-	docker build -t adobeapiplatform/apigateway:10-debian-1.21.4.2 -f Dockerfile-debian .
+	docker build --build-arg BASE_REGISTRY=${BASE_REGISTRY} --build-arg CONFIG_SUPERVISOR_VERSION=${CONFIG_SUPERVISOR_VERSION} -t ${IMAGE_NAME}:10-debian-1.21.4.2 -f Dockerfile-debian .
 
-docker-debian-multiarch:
-	docker buildx build --platform linux/amd64,linux/arm64 --push -t adobeapiplatform/apigateway:buster-v1.21.4.2-validation-v1.3.22-multiarch -f Dockerfile-debian .
+docker-debian-multiarch-push:
+	docker buildx build --platform linux/amd64,linux/arm64 --build-arg BASE_REGISTRY=${BASE_REGISTRY} --build-arg CONFIG_SUPERVISOR_VERSION=${CONFIG_SUPERVISOR_VERSION} --push -t $(DOCKER_REGISTRY)/${IMAGE_NAME}:$(DOCKER_TAG) -f Dockerfile-debian .
 
 .PHONY: docker-ssh
 docker-ssh:
-	docker run -ti --entrypoint='bash' adobeapiplatform/apigateway:latest
+	docker run -ti --entrypoint='bash' ${IMAGE_NAME}:latest
 
 .PHONY: docker-run
 docker-run:
-	docker run --rm --name="apigateway" -p 80:80 -p 5000:5000 -p 9113:9113 adobeapiplatform/apigateway:latest ${DOCKER_ARGS}
+	docker run --rm --name="apigateway" -p 80:80 -p 5000:5000 -p 9113:9113 ${IMAGE_NAME}:latest ${DOCKER_ARGS}
 
 .PHONY: docker-debug
 docker-debug:
@@ -28,7 +31,7 @@ docker-debug:
 			-p 80:80 -p 5000:5000 -p 9113:9113 \
 			-e "LOG_LEVEL=info" -e "DEBUG=true" \
 			-v ${HOME}/tmp/apiplatform/apigateway/api-gateway-config/:/etc/api-gateway \
-			adobeapiplatform/apigateway:latest ${DOCKER_ARGS}
+			${IMAGE_NAME}:latest ${DOCKER_ARGS}
 
 .PHONY: docker-reload
 docker-reload:
@@ -58,6 +61,6 @@ docker-compose:
 
 .PHONY: docker-push
 docker-push:
-	docker tag adobeapiplatform/apigateway $(DOCKER_REGISTRY)/adobeapiplatform/apigateway:$(DOCKER_TAG)
-	docker push $(DOCKER_REGISTRY)/adobeapiplatform/apigateway:$(DOCKER_TAG)
+	docker tag ${IMAGE_NAME} $(DOCKER_REGISTRY)/${IMAGE_NAME}:$(DOCKER_TAG)
+	docker push $(DOCKER_REGISTRY)/${IMAGE_NAME}:$(DOCKER_TAG)
 
