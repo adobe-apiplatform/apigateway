@@ -290,6 +290,8 @@ RUN mkdir -p /usr/local/api-gateway \
     && chmod 755 -R /etc/api-gateway /var/log/api-gateway /usr/local \
     && echo "nginx-api-gateway ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
+RUN apt-get update && apt-get install -y inotify-tools
+
 USER nginx-api-gateway
 
 ENTRYPOINT ["/etc/init-container.sh"]

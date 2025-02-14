@@ -100,6 +100,8 @@ There are a few things to take into consideration when changing this value:
 * Cost. Some tools may make 1 API request per file to compare it. I.e. in S3 72 config files checked every `10s` costs `$7.46` but when checked every `30s` it's only `$2.4`, times number of GW nodes.
 * Average time for an API Request. When reloading the GW the existing NGINX processes handling active connections are kept in the background until the request completes. So reloading the Gateway too fast may have the side effect of keeping too many processes running at the same time. This may, or may not be a problem but it's good to be aware of it.
 
+In case there are occasional issues with tracking config changes `FORCE_RELOAD_INTERVAL_S` variable can be used to enable regular force-reloads of the config.
+
 #### Customizing the sync command
 
 The sync command used for downloading the configuration files can be controlled via `REMOTE_CONFIG_SYNC_CMD` as well. This ENV VAR overrides the `REMOTE_CONFIG` one.
