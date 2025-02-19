@@ -25,6 +25,7 @@ debug_mode=${DEBUG}
 log_level=${LOG_LEVEL:-warn}
 marathon_host=${MARATHON_HOST}
 sleep_duration=${MARATHON_POLL_INTERVAL:-5}
+force_reload_interval_s=${FORCE_RELOAD_INTERVAL_S:--1}
 #
 # location for a remote /etc/api-gateway folder.
 # i.e s3://api-gateway-config
@@ -106,6 +107,20 @@ while true; do \
       sleep 1; \
     fi; \
 done &
+
+echo "   ... starting inotify-tools watcher "
+inotifywait -m -r -e modify -e attrib -e move -e move_self -e create -e delete -e delete_self --format "%T %w (%f) %:e" --timefmt "%Y-%m-%d %H:%M:%S %z" /etc/api-gateway &
+
+if [ $force_reload_interval_s -gt 0 ]; then
+    echo "   ... starting regular api-gateway force reload (every ${force_reload_interval_s} seconds)"
+    while true; do \
+        sleep ${force_reload_interval_s}; \
+        echo "   ... reloading api-gateway "; \
+        sudo api-gateway -s reload
+    done &
+else
+    echo "   ... skipping regular api-gateway force reloads (FORCE_RELOAD_INTERVAL_S is set to ${force_reload_interval_s})"
+fi
 
 echo "   ... using log level: '${log_level}'. Override it with -e 'LOG_LEVEL=<level>' "
 sudo api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level};"
