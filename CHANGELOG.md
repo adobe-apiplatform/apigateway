@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/adobe-apiplatform/apigateway/compare/v1.2.1...v1.3.0) (2025-02-19)
+
+
+### Features
+
+* added force-reloads of config and inotify-watcher ([#86](https://github.com/adobe-apiplatform/apigateway/issues/86)) ([1e56fb0](https://github.com/adobe-apiplatform/apigateway/commit/1e56fb0d146da0c7d41ccc6919f1cd665809faac))
+
 ## [1.2.1](https://github.com/adobe-apiplatform/apigateway/compare/v1.2.0...v1.2.1) (2025-02-06)
 
 
