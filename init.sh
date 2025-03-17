@@ -26,6 +26,8 @@ log_level=${LOG_LEVEL:-warn}
 marathon_host=${MARATHON_HOST}
 sleep_duration=${MARATHON_POLL_INTERVAL:-5}
 force_reload_interval_s=${FORCE_RELOAD_INTERVAL_S:--1}
+active_active=${ACTIVE_ACTIVE:-false}
+
 #
 # location for a remote /etc/api-gateway folder.
 # i.e s3://api-gateway-config
@@ -123,4 +125,4 @@ else
 fi
 
 echo "   ... using log level: '${log_level}'. Override it with -e 'LOG_LEVEL=<level>' "
-sudo api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level};"
+sudo -E api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level}; env ACTIVE_ACTIVE=${active_active};"

@@ -23,8 +23,10 @@ ARG _sysconfdir=/etc
 ARG _sbindir=/usr/local/sbin
 
 ARG TEST_NGINX_VERSION=0.26
-# Docker Build Arguments
-ARG RESTY_VERSION="1.21.4.2"
+
+ARG NGINX_UPSTREAM_CHECK_MODULE_VERSION="0.4.0"
+ARG NGINX_VERSION="1.21.4"
+ARG RESTY_VERSION="${NGINX_VERSION}.2"
 ARG RESTY_LUAROCKS_VERSION="3.9.2"
 
 # !!! Do not upgrade RESTY_OPENSSL_VERSION to "3.1.3". It will break the reload with OOM error. Other versions have not been tested.
@@ -94,9 +96,14 @@ RUN cd /tmp \
 RUN cd /tmp \
     && curl -fSLk https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
-    && cd openresty-${RESTY_VERSION} \
+    && cd openresty-${RESTY_VERSION}/bundle/nginx-${NGINX_VERSION} \
+    && curl -fSLk https://github.com/yaoweibin/nginx_upstream_check_module/archive/refs/tags/v${NGINX_UPSTREAM_CHECK_MODULE_VERSION}.tar.gz -o nginx_upstream_check_module-${NGINX_UPSTREAM_CHECK_MODULE_VERSION}.tar.gz \
+    && tar xzf nginx_upstream_check_module-${NGINX_UPSTREAM_CHECK_MODULE_VERSION}.tar.gz \
+    && patch -p1 < nginx_upstream_check_module-${NGINX_UPSTREAM_CHECK_MODULE_VERSION}/check_1.20.1+.patch \
+    && cd /tmp/openresty-${RESTY_VERSION} \
     && readonly NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) \
     && ./configure -j${NPROC} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
+        --add-module=/tmp/openresty-${RESTY_VERSION}/bundle/nginx-${NGINX_VERSION}/nginx_upstream_check_module-${NGINX_UPSTREAM_CHECK_MODULE_VERSION} \
     && make -j${NPROC} \
     && make -j${NPROC} install
 
