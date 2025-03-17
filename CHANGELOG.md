@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/adobe-apiplatform/apigateway/compare/v1.3.0...v1.4.0) (2025-03-17)
+
+
+### Features
+
+* add nginx upstream check module to openresty ([#82](https://github.com/adobe-apiplatform/apigateway/issues/82)) ([d146aea](https://github.com/adobe-apiplatform/apigateway/commit/d146aeaf05ab9ff6e10b9c8231dd45092b1cd4e8))
+
 ## [1.3.0](https://github.com/adobe-apiplatform/apigateway/compare/v1.2.1...v1.3.0) (2025-02-19)
 
 
