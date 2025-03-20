@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/adobe-apiplatform/apigateway/compare/v1.4.0...v1.4.1) (2025-03-20)
+
+
+### Bug Fixes
+
+* explicitly pass active-active env vars ([#90](https://github.com/adobe-apiplatform/apigateway/issues/90)) ([6091967](https://github.com/adobe-apiplatform/apigateway/commit/60919678c25e7c99a4c8385bc0975d7ca8224592))
+
 ## [1.4.0](https://github.com/adobe-apiplatform/apigateway/compare/v1.3.0...v1.4.0) (2025-03-17)
 
 
