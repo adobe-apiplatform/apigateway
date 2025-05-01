@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/adobe-apiplatform/apigateway/compare/v1.4.1...v1.5.0) (2025-05-01)
+
+
+### Features
+
+* **RUNNER-6574:** add OpenTelemetry tracing support ([#92](https://github.com/adobe-apiplatform/apigateway/issues/92)) ([333b2c4](https://github.com/adobe-apiplatform/apigateway/commit/333b2c4a26cd1eec39c1f21924c9caafeac277e5))
+
 ## [1.4.1](https://github.com/adobe-apiplatform/apigateway/compare/v1.4.0...v1.4.1) (2025-03-20)
 
 
