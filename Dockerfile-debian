@@ -311,7 +311,7 @@ RUN groupadd --gid 1000 nginx-api-gateway \
     && useradd --uid 1000 --gid nginx-api-gateway --shell /bin/bash --create-home nginx-api-gateway
 
 RUN mkdir -p /usr/local/api-gateway \
-    && chown -R nginx-api-gateway /etc/init-container.sh /etc/api-gateway /var/log/api-gateway /usr/local \
+    && chown -R nginx-api-gateway:nginx-api-gateway /etc/init-container.sh /etc/api-gateway /var/log/api-gateway /usr/local \
     && chmod 755 -R /etc/api-gateway /var/log/api-gateway /usr/local \
     && echo "nginx-api-gateway ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
