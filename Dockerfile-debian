@@ -25,12 +25,11 @@ ARG _sbindir=/usr/local/sbin
 ARG TEST_NGINX_VERSION=0.26
 
 ARG NGINX_UPSTREAM_CHECK_MODULE_VERSION="0.4.0"
-ARG NGINX_VERSION="1.21.4"
+ARG NGINX_VERSION="1.27.1"
 ARG RESTY_VERSION="${NGINX_VERSION}.2"
-ARG RESTY_LUAROCKS_VERSION="3.9.2"
+ARG RESTY_LUAROCKS_VERSION="3.12.2"
 
-# !!! Do not upgrade RESTY_OPENSSL_VERSION to "3.1.3". It will break the reload with OOM error. Other versions have not been tested.
-ARG RESTY_OPENSSL_VERSION="1.1.1"
+ARG RESTY_OPENSSL_VERSION="3.4.3"
 ARG RESTY_CONFIG_OPTIONS="\
                 --prefix=${_exec_prefix} \
                 --sbin-path=${_sbindir}/api-gateway \
@@ -68,7 +67,7 @@ ARG RESTY_CONFIG_OPTIONS_MORE=""
 ARG _RESTY_CONFIG_DEPS="--with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre"
 
 # OpenTelemetry dependency versions
-ARG LUA_PROTOBUF_VERSION=0.3.3
+ARG LUA_PROTOBUF_VERSION=0.3.3-1
 ARG API7_LUA_RESTY_HTTP_VERSION=0.2.0
 ARG OPENTELEMETRY_LUA_VERSION=0.2.6
 
@@ -311,7 +310,7 @@ RUN groupadd --gid 1000 nginx-api-gateway \
     && useradd --uid 1000 --gid nginx-api-gateway --shell /bin/bash --create-home nginx-api-gateway
 
 RUN mkdir -p /usr/local/api-gateway \
-    && chown -R nginx-api-gateway /etc/api-gateway /var/log/api-gateway /usr/local \
+    && chown -R nginx-api-gateway:nginx-api-gateway /etc/init-container.sh /etc/api-gateway /var/log/api-gateway /usr/local \
     && chmod 755 -R /etc/api-gateway /var/log/api-gateway /usr/local \
     && echo "nginx-api-gateway ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
