@@ -29,7 +29,6 @@ ARG NGINX_VERSION="1.27.1"
 ARG RESTY_VERSION="${NGINX_VERSION}.2"
 ARG RESTY_LUAROCKS_VERSION="3.12.2"
 
-# !!! Do not upgrade RESTY_OPENSSL_VERSION to "3.1.3". It will break the reload with OOM error. Other versions have not been tested.
 ARG RESTY_OPENSSL_VERSION="3.4.3"
 ARG RESTY_CONFIG_OPTIONS="\
                 --prefix=${_exec_prefix} \
