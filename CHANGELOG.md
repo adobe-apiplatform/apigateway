@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.1](https://github.com/adobe-apiplatform/apigateway/compare/v1.5.0...v1.5.1) (2026-01-08)
+
+
+### Bug Fixes
+
+* **RUNNER-8740:** Update to OpenResty v1.27.1.2; OpenSSL v3.4.3; LuaRocks v3.12.2 ([a9207a1](https://github.com/adobe-apiplatform/apigateway/commit/a9207a18b1c6c8fdf5e65dac3537bef4e6d99ffc))
+
+
+### Chores
+
+* **RUNNER-8740:** Update to OpenResty v1.27.1.2; OpenSSL v3.4.3; LuaRocks v3.12.2 ([#94](https://github.com/adobe-apiplatform/apigateway/issues/94)) ([9064116](https://github.com/adobe-apiplatform/apigateway/commit/9064116e8f66589f4a7654e7189a692eab2cc005))
+
 ## [1.5.0](https://github.com/adobe-apiplatform/apigateway/compare/v1.4.1...v1.5.0) (2025-05-01)
 
 
