@@ -26,15 +26,6 @@ log_level=${LOG_LEVEL:-warn}
 marathon_host=${MARATHON_HOST}
 sleep_duration=${MARATHON_POLL_INTERVAL:-5}
 force_reload_interval_s=${FORCE_RELOAD_INTERVAL_S:--1}
-active_active_api_gateway_token=${ACTIVE_ACTIVE_API_GATEWAY_TOKEN}
-active_active_namespace_0=${ACTIVE_ACTIVE_NAMESPACE_0}
-active_active_namespace_1=${ACTIVE_ACTIVE_NAMESPACE_1}
-active_active_set_upstream_interval=${ACTIVE_ACTIVE_SET_UPSTREAM_INTERVAL}
-active_active_status_check_interval=${ACTIVE_ACTIVE_STATUS_CHECK_INTERVAL}
-active_active_upstreams_csv_path=${ACTIVE_ACTIVE_UPSTREAMS_CSV_PATH}
-active_active_weight_0=${ACTIVE_ACTIVE_WEIGHT_0}
-active_active_weight_1=${ACTIVE_ACTIVE_WEIGHT_1}
-active_active=${ACTIVE_ACTIVE:-false}
 
 #
 # location for a remote /etc/api-gateway folder.
@@ -133,4 +124,4 @@ else
 fi
 
 echo "   ... using log level: '${log_level}'. Override it with -e 'LOG_LEVEL=<level>' "
-sudo -E api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level}; env ACTIVE_ACTIVE=${active_active}; env ACTIVE_ACTIVE_API_GATEWAY_TOKEN=${active_active_api_gateway_token}; env ACTIVE_ACTIVE_NAMESPACE_0=${active_active_namespace_0}; env ACTIVE_ACTIVE_NAMESPACE_1=${active_active_namespace_1}; env ACTIVE_ACTIVE_SET_UPSTREAM_INTERVAL=${active_active_set_upstream_interval}; env ACTIVE_ACTIVE_STATUS_CHECK_INTERVAL=${active_active_status_check_interval}; env ACTIVE_ACTIVE_UPSTREAMS_CSV_PATH=${active_active_upstreams_csv_path}; env ACTIVE_ACTIVE_WEIGHT_0=${active_active_weight_0}; env ACTIVE_ACTIVE_WEIGHT_1=${active_active_weight_1};"
+sudo -E api-gateway -p /usr/local/api-gateway/ -c /etc/api-gateway/api-gateway.conf -g "daemon off; error_log /dev/stderr ${log_level};"
