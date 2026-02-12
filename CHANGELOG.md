@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.2](https://github.com/adobe-apiplatform/apigateway/compare/v1.5.1...v1.5.2) (2026-02-12)
+
+
+### Bug Fixes
+
+* update apigateway-request-validation to 1.4.0 ([#96](https://github.com/adobe-apiplatform/apigateway/issues/96)) ([4aea125](https://github.com/adobe-apiplatform/apigateway/commit/4aea125cfa0595cbd4a1dbb8198f1be49764d209))
+
 ## [1.5.1](https://github.com/adobe-apiplatform/apigateway/compare/v1.5.0...v1.5.1) (2026-01-08)
 
 
