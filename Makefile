@@ -2,7 +2,7 @@ DOCKER_TAG ?= snapshot-`date +'%Y%m%d-%H%M'`
 DOCKER_REGISTRY ?= 'docker.io'
 BASE_REGISTRY ?= 'docker.io'
 IMAGE_NAME ?= 'adobeapiplatform/apigateway'
-CONFIG_SUPERVISOR_VERSION ?= '1.0.3'
+CONFIG_SUPERVISOR_VERSION ?= '1.0.4'
 
 docker:
 	docker build --build-arg BASE_REGISTRY=${BASE_REGISTRY} --build-arg CONFIG_SUPERVISOR_VERSION=${CONFIG_SUPERVISOR_VERSION} -t ${IMAGE_NAME} .
