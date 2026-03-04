@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.3](https://github.com/adobe-apiplatform/apigateway/compare/v1.5.2...v1.5.3) (2026-03-04)
+
+
+### Bug Fixes
+
+* add `OPTIONS` support to `srcache_methods` during build ([#98](https://github.com/adobe-apiplatform/apigateway/issues/98)) ([379ab67](https://github.com/adobe-apiplatform/apigateway/commit/379ab6719f40b629107c6ba694c6b2dc8a592cd9))
+
 ## [1.5.2](https://github.com/adobe-apiplatform/apigateway/compare/v1.5.1...v1.5.2) (2026-02-12)
 
 
