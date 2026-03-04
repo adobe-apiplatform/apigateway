@@ -97,9 +97,12 @@ RUN cd /tmp \
     && curl -fSLk https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz
 
+# After fetching openresty, we need to patch the srcache-nginx-module to add support for the OPTIONS method before compiling.
 RUN cd /tmp \
     && curl -fSLk https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
+    && sed -i '/NGX_HTTP_DELETE },/a\ { ngx_string("OPTIONS"), NGX_HTTP_OPTIONS },' \
+        openresty-${RESTY_VERSION}/bundle/srcache-nginx-module-*/src/ngx_http_srcache_filter_module.c \
     && cd openresty-${RESTY_VERSION}/bundle/nginx-${NGINX_VERSION} \
     && curl -fSLk https://github.com/yaoweibin/nginx_upstream_check_module/archive/refs/tags/v${NGINX_UPSTREAM_CHECK_MODULE_VERSION}.tar.gz -o nginx_upstream_check_module-${NGINX_UPSTREAM_CHECK_MODULE_VERSION}.tar.gz \
     && tar xzf nginx_upstream_check_module-${NGINX_UPSTREAM_CHECK_MODULE_VERSION}.tar.gz \
