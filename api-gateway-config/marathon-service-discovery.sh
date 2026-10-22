@@ -56,7 +56,7 @@ info_log() {
 }
 
 # 0. Obtain list of current tasks from Marathon. If not available, skip reload
-existing_tasks=$(curl -s ${marathon_host}/v2/tasks -H "Accept:text/plain")
+existing_tasks=$(curl -fsS ${marathon_host}/v2/tasks -H "Accept:text/plain")
 found_existing_tasks=$?
 if [ ${found_existing_tasks} -eq 0 ]; then
     # 1. create the new upstream config
